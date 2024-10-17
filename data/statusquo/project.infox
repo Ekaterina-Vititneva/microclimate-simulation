@@ -1,0 +1,15 @@
+<ENVI-MET_Datafile>
+<Header>
+<filetype>infoX ENVI-met Project Description File</filetype>
+<version>182760448</version>
+<revisiondate>13.09.2024 17:49:33</revisiondate>
+<remark></remark>
+<checksum>0</checksum>
+<encryptionlevel>0</encryptionlevel>
+</Header>
+  <project_description>
+     <name> Playground </name>
+     <description> ENVI-met Playground Project </description>
+     <useProjectDB> 1 </useProjectDB>
+  </project_description>
+</ENVI-MET_Datafile>

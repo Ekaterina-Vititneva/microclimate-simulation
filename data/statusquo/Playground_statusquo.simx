@@ -1,0 +1,94 @@
+<ENVI-MET_Datafile>
+<Header>
+<filetype>SIMX</filetype>
+<version>2</version>
+<revisiondate>13.09.2024 17:58:04</revisiondate>
+<remark></remark>
+<checksum>0</checksum>
+<encryptionlevel>0</encryptionlevel>
+</Header>
+  <mainData>
+     <simName> Playground </simName>
+     <INXFile> Playground_statusquo.INX </INXFile>
+     <filebaseName> Playground </filebaseName>
+     <outDir>  </outDir>
+     <startDate> 06.07.2024 </startDate>
+     <startTime> 04:00:00 </startTime>
+     <simDuration> 24 </simDuration>
+     <windSpeed> 2.00000 </windSpeed>
+     <windDir> 235.00000 </windDir>
+     <z0> 0.01000 </z0>
+     <T_H> 293.00000 </T_H>
+     <Q_H> 8.00000 </Q_H>
+     <Q_2m> 50.00000 </Q_2m>
+     <windLimit> 5.00000 </windLimit>
+     <windAccuracy> standard </windAccuracy>
+     <scenario>  </scenario>
+  </mainData>
+  <Sources>
+     <userPolluName> My Pollutant </userPolluName>
+     <userPolluType> 0 </userPolluType>
+     <userPartDiameter> 10.00000 </userPartDiameter>
+     <userPartDensity> 1.00000 </userPartDensity>
+     <multipleSources> 1 </multipleSources>
+     <activeChem> 1 </activeChem>
+     <isoprene> 0 </isoprene>
+  </Sources>
+  <OutputSettings>
+     <mainFiles> 60 </mainFiles>
+     <textFiles> 30 </textFiles>
+     <netCDF> 1 </netCDF>
+     <netCDFAllDataInOneFile> 1 </netCDFAllDataInOneFile>
+     <netCDFWriteOnlySmallFile> 0 </netCDFWriteOnlySmallFile>
+     <inclNestingGrids> 0 </inclNestingGrids>
+     <writeAgents> 0 </writeAgents>
+     <writeAtmosphere> 1 </writeAtmosphere>
+     <writeBuildings> 0 </writeBuildings>
+     <writeObjects> 0 </writeObjects>
+     <writeGreenpass> 0 </writeGreenpass>
+     <writeNesting> 0 </writeNesting>
+     <writeRadiation> 1 </writeRadiation>
+     <writeSoil> 0 </writeSoil>
+     <writeSolarAccess> 0 </writeSolarAccess>
+     <writeSurface> 0 </writeSurface>
+     <writeVegetation> 0 </writeVegetation>
+  </OutputSettings>
+  <FullForcing>
+     <fileName> PLAYGROUND.FOX </fileName>
+     <forceT> 1 </forceT>
+     <forceQ> 1 </forceQ>
+     <forceWind> 0 </forceWind>
+     <forcePrecip> 0 </forcePrecip>
+     <forceRadClouds> 1 </forceRadClouds>
+     <nudging> 1 </nudging>
+     <nudgingFactor> 1.00000 </nudgingFactor>
+     <verticalTAir> 0 </verticalTAir>
+  </FullForcing>
+  <Background>
+     <userSpec> 0.00000 </userSpec>
+     <NO> 0.00000 </NO>
+     <NO2> 0.00000 </NO2>
+     <O3> 0.00000 </O3>
+     <PM_10> 0.00000 </PM_10>
+     <PM_2_5> 0.00000 </PM_2_5>
+  </Background>
+  <SolarAdjust>
+     <SWFactor> 1.00000 </SWFactor>
+  </SolarAdjust>
+  <RadScheme>
+     <IVSHeightAngle_HiRes> 15 </IVSHeightAngle_HiRes>
+     <IVSAziAngle_HiRes> 15 </IVSAziAngle_HiRes>
+     <IVSHeightAngle_LoRes> 30 </IVSHeightAngle_LoRes>
+     <IVSAziAngle_LoRes> 30 </IVSAziAngle_LoRes>
+     <AdvCanopyRadTransfer> 1 </AdvCanopyRadTransfer>
+     <ViewFacUpdateInterval> 10 </ViewFacUpdateInterval>
+     <RayTraceStepWidthHighRes> 0.25000 </RayTraceStepWidthHighRes>
+     <RayTraceStepWidthLowRes> 0.50000 </RayTraceStepWidthLowRes>
+     <RadiationHeightBoundary> 10.00000 </RadiationHeightBoundary>
+     <MRTCalcMethod> 1 </MRTCalcMethod>
+     <MRTProjFac> 2 </MRTProjFac>
+  </RadScheme>
+  <Parallel>
+     <CPUdemand> ALL </CPUdemand>
+  </Parallel>
+</ENVI-MET_Datafile>
