@@ -21,7 +21,7 @@ scenarios including some short information about what and why it is shown.
 - The output data of both simulation runs
   - netCDF file format
 
-### File extensions
+## File extensions
 
 ##### INX-File
 
@@ -98,3 +98,11 @@ Variables like temperature, humidity, wind, and more.
 **How to Use:** You'll use Python libraries (e.g., xarray, netCDF4) to extract and visualize the data. For example, you can generate heatmaps of temperature distribution, compare wind speeds at different heights, or calculate thermal comfort indices based on temperature and humidity.
 
 </details>
+
+## Set up
+
+1. Activate the venv
+
+```
+.\env\Scripts\activate
+```
