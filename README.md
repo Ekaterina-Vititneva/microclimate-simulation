@@ -23,7 +23,7 @@ scenarios including some short information about what and why it is shown.
 
 ## File extensions
 
-##### INX-File
+### INX-File
 
 _Model Area File_
 
@@ -39,7 +39,7 @@ Grid structure (3D representation of the environment).
 - Generate the surface input files (.INX) to run the simulation.
 - https://envi-met.com/microclimate-simulation-software/
 
-###### SIMX-File
+### SIMX-File
 
 _Simulation configuration files_
 
@@ -51,7 +51,7 @@ Physical parameters (such as roughness, heat transfer coefficients, etc.).
 
 **How to Use:** The settings within this file help you understand the context of the simulation, which is essential when interpreting the results. It’s important to know these parameters to properly compare the two scenarios.
 
-##### INFOX-File
+### INFOX-File
 
 _Project Information File_
 
@@ -62,7 +62,7 @@ General project information (descriptions, versioning, etc.).
 
 **How to Use:** This file doesn’t usually have direct implications on the simulation data but is useful for tracking and documenting the project. It can be included in the report for context.
 
-##### EDB-File
+### EDB-File
 
 _ENVI-met Database File_
 
@@ -74,7 +74,7 @@ Vegetation data (type, size, transpiration rates).
 
 **How to Use:** When interpreting thermal comfort or environmental conditions, the material and vegetation properties play a major role in how heat and moisture are exchanged in the model.
 
-##### FOX-File
+### FOX-File
 
 _Climate Input Data File_
 
@@ -85,7 +85,7 @@ Climate conditions over time (hourly or finer time steps).
 
 **How to Use:** These inputs drive the simulation and define the external environmental conditions. When comparing scenarios, differences in the climate data may need to be accounted for.
 
-##### netCDF
+### netCDF
 
 _Main output data, used for generating visualizations._
 
