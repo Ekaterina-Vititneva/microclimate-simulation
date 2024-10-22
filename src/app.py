@@ -1,3 +1,4 @@
+import os
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
@@ -54,5 +55,6 @@ def update_graph(selected_option):
         return px.bar(df, x="Category", y="Values", title="Option 2 Data")
 
 # Run the app
-if __name__ == '__main__':
-    app.run_server(debug=True)
+if __name__ == "__main__":
+    app.run_server(host="0.0.0.0", port=int(os.environ.get("PORT", 8050)))
+
