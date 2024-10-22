@@ -10,7 +10,7 @@ import os
 app = dash.Dash(__name__)
 server = app.server
 
-# Load the .nc files (replace with your file paths)
+# Load the .nc files
 statusquo_file = 'data/statusquo/Playground_2024-07-06_04.00.00.nc'
 optimized_file = 'data/opti/Playground_2024-07-06_04.00.00.nc'
 
@@ -21,7 +21,7 @@ ds_optimized = xr.open_dataset(optimized_file)
 df_statusquo = ds_statusquo.to_dataframe().reset_index()
 df_optimized = ds_optimized.to_dataframe().reset_index()
 
-# Merge or compare the data as needed (custom logic)
+# Merge or compare the data as needed
 df_comparison = pd.concat([df_statusquo, df_optimized])
 
 # Layout for the Dash app
