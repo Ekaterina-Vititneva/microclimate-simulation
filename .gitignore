@@ -1,5 +1,5 @@
 # Large simulation data files
-#*.nc
+*.nc
 
 # Environments
 .env
