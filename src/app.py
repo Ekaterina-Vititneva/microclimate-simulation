@@ -1,21 +1,28 @@
-import os
-import dash
+import xarray as xr
+import dash 
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
+import os
 
 # Initialize the Dash app
 app = dash.Dash(__name__)
-
-# Expose the Flask server (for Gunicorn)
 server = app.server
 
-# Sample data (replace with your actual data or visualizations)
-df = pd.DataFrame({
-    "Category": ["A", "B", "C"],
-    "Values": [10, 20, 30]
-})
+# Load the .nc files (replace with your file paths)
+statusquo_file = 'data/statusquo/Playground_2024-07-06_04.00.00.nc'
+optimized_file = 'data/opti/Playground_2024-07-06_04.00.00.nc'
+
+ds_statusquo = xr.open_dataset(statusquo_file)
+ds_optimized = xr.open_dataset(optimized_file)
+
+# Sample code to extract and process data from .nc files
+df_statusquo = ds_statusquo.to_dataframe().reset_index()
+df_optimized = ds_optimized.to_dataframe().reset_index()
+
+# Merge or compare the data as needed (custom logic)
+df_comparison = pd.concat([df_statusquo, df_optimized])
 
 # Layout for the Dash app
 app.layout = html.Div(children=[
@@ -25,36 +32,12 @@ app.layout = html.Div(children=[
         Status Quo vs. Optimized Scenario Comparison
     '''),
 
-    # Example Graph (replace this with your visualizations)
+    # Example Graph
     dcc.Graph(
-        id='example-graph',
-        figure=px.bar(df, x="Category", y="Values", title="Sample Data Visualization")
-    ),
-
-    # Dropdown for interaction (if needed)
-    dcc.Dropdown(
-        id='dropdown',
-        options=[
-            {'label': 'Option 1', 'value': '1'},
-            {'label': 'Option 2', 'value': '2'}
-        ],
-        value='1'
+        id='comparison-graph',
+        figure=px.line(df_comparison, x="Time", y="Temperature", color="Scenario", title="Temperature Over Time")
     ),
 ])
 
-# Callback (replace with your actual interactive functionality)
-@app.callback(
-    Output('example-graph', 'figure'),
-    [Input('dropdown', 'value')]
-)
-def update_graph(selected_option):
-    # Example update logic (use real data/logic for your task)
-    if selected_option == '1':
-        return px.bar(df, x="Category", y="Values", title="Option 1 Data")
-    else:
-        return px.bar(df, x="Category", y="Values", title="Option 2 Data")
-
-# Run the app
 if __name__ == "__main__":
     app.run_server(host="0.0.0.0", port=int(os.environ.get("PORT", 8050)))
-
