@@ -16,13 +16,19 @@ app = dash.Dash(__name__)
 # Expose the Flask server (for Gunicorn)
 server = app.server
 
-# Download function definition
+# Download function definition with file size check
 def download_file_from_google_drive(url, dest_path):
     response = requests.get(url)
     if response.status_code == 200:
         with open(dest_path, 'wb') as f:
             f.write(response.content)
         print(f"File downloaded successfully to {dest_path}")
+        
+        # Check file size after download
+        file_size = os.path.getsize(dest_path)
+        print(f"Downloaded file size: {file_size} bytes")
+        if file_size < 1000000:  # Arbitrary threshold for checking size (1MB here)
+            print("Warning: The downloaded file seems too small. It may be incomplete.")
     else:
         print(f"Failed to download file. Status code: {response.status_code}")
 
@@ -36,9 +42,16 @@ nc_file_path = "data/statusquo/Playground_2024-07-06_04.00.00.nc"
 if not os.path.exists(nc_file_path):
     download_file_from_google_drive(google_drive_url, nc_file_path)
 
+# Check if the file was downloaded successfully
+if not os.path.exists(nc_file_path) or os.path.getsize(nc_file_path) < 1000000:
+    raise Exception(f"File {nc_file_path} was not downloaded correctly or is incomplete.")
+
 # Load the netCDF file
-#ds = xr.open_dataset(nc_file_path)
-ds = xr.open_dataset(nc_file_path, engine='netcdf4')
+try:
+    ds = xr.open_dataset(nc_file_path, engine='netcdf4')
+except Exception as e:
+    print(f"Error loading the netCDF file: {e}")
+    raise e
 
 print(f"Path to .nc file: {nc_file_path}")
 print(os.path.exists(nc_file_path))  # Should return True if the file exists
