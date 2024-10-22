@@ -101,8 +101,14 @@ Variables like temperature, humidity, wind, and more.
 
 ## Set up
 
+### Running locally
+
 1. Activate the venv
 
 ```
 .\env\Scripts\activate
+```
+
+```
+pip install -r requirements-dev.txt
 ```
