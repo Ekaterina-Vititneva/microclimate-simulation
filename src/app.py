@@ -8,6 +8,8 @@ import xarray as xr
 import os
 import requests
 
+print(xr.backends.list_engines())  # Should include 'netcdf4'
+
 # Initialize the Dash app
 app = dash.Dash(__name__)
 
@@ -35,7 +37,12 @@ if not os.path.exists(nc_file_path):
     download_file_from_google_drive(google_drive_url, nc_file_path)
 
 # Load the netCDF file
-ds = xr.open_dataset(nc_file_path)
+#ds = xr.open_dataset(nc_file_path)
+ds = xr.open_dataset(nc_file_path, engine='netcdf4')
+
+print(f"Path to .nc file: {nc_file_path}")
+print(os.path.exists(nc_file_path))  # Should return True if the file exists
+
 
 # Layout for the Dash app
 app.layout = html.Div(children=[
@@ -65,17 +72,17 @@ def update_surface_temp_graph(selected_time):
     # Extract the surface temperature data for the selected time step
     surface_temperature = ds['TSurf'].sel(Time=selected_time)
     
-    # Create a heatmap of the surface temperature
     fig = go.Figure(data=go.Heatmap(
-        z=surface_temperature.values,
-        colorscale='coolwarm',
-        colorbar=dict(title='Temperature (°C)')
+    z=surface_temperature.values,
+    colorscale=[[0, 'blue'], [0.5, 'white'], [1, 'red']]
     ))
 
     fig.update_layout(
         title=f'Surface Temperature at {selected_time}',
         xaxis_title='Grid X',
-        yaxis_title='Grid Y'
+        yaxis_title='Grid Y',
+        width=600,  # Set the width
+        height=600,  # Set the height (same as width to make it square)
     )
 
     return fig
