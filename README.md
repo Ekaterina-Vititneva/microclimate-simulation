@@ -1,5 +1,7 @@
 # microclimate-simulation
 
+![Surface Temperature plot (TSurf)](assets\TSurf_output_statusquo.png)
+
 ## Goal
 
 The goal of this project is to develop Python scripts that generate clear, insightful visualizations
