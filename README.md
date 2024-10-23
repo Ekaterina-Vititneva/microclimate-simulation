@@ -1,6 +1,6 @@
 # microclimate-simulation
 
-![Surface Temperature plot (TSurf)](assets\TSurf_output_statusquo.png)
+![Surface Temperature plot (TSurf)](assets/TSurf_output_statusquo.png)
 
 ## Goal
 
