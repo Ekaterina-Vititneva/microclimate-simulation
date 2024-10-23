@@ -106,7 +106,7 @@ Variables like temperature, humidity, wind, and more.
 1. Activate the venv
 
 ```
-.\env\Scripts\activate
+.\venv\Scripts\activate
 ```
 
 ```
