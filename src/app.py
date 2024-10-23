@@ -15,14 +15,10 @@ server = app.server
 
 # File download function
 def download_file_from_dropbox(dropbox_url, dest_path, chunk_size=1024):
-    # Dropbox URL modification for direct download
     dropbox_url = dropbox_url.replace('?dl=0', '?dl=1')
-    
-    # Requesting the file with streaming option
     response = requests.get(dropbox_url, stream=True)
     total_size = int(response.headers.get('content-length', 0))
-    
-    # Progress bar to monitor download progress
+
     with open(dest_path, 'wb') as file, tqdm.tqdm(
         desc=dest_path, total=total_size, unit='B', unit_scale=True
     ) as progress_bar:
@@ -41,23 +37,15 @@ dropbox_url = "https://www.dropbox.com/scl/fi/rh1ut0xug2cs0obkbyw1x/Playground_2
 if not os.path.exists(nc_file_path):
     download_file_from_dropbox(dropbox_url, nc_file_path)
 
+# Initialize the dataset as None
+ds = None
+
 # Load the netCDF file and verify it
 try:
     ds = xr.open_dataset(nc_file_path, engine='netcdf4')
     print(f"Dataset structure: {ds}")
 except Exception as e:
     print(f"Error opening file {nc_file_path}: {e}")
-
-# Verify the presence of the 'Time' and 'TSurf' variables
-if 'Time' in ds:
-    print("Time variable found")
-else:
-    print("Time variable not found")
-
-if 'TSurf' in ds:
-    print("TSurf variable found")
-else:
-    print("TSurf variable not found")
 
 # Layout for the Dash app
 app.layout = html.Div(children=[
@@ -70,8 +58,8 @@ app.layout = html.Div(children=[
     # Dropdown for selecting time step
     dcc.Dropdown(
         id='time-dropdown',
-        options=[{'label': str(time_val), 'value': str(time_val)} for time_val in ds['Time'].values] if 'Time' in ds else [],
-        value=str(ds['Time'].values[0]) if 'Time' in ds else None,  # Default value is the first time step
+        options=[{'label': str(time_val), 'value': str(time_val)} for time_val in ds['Time'].values] if ds and 'Time' in ds else [],
+        value=str(ds['Time'].values[0]) if ds and 'Time' in ds else None,
         placeholder="Select..."
     ),
 
@@ -88,7 +76,7 @@ app.layout = html.Div(children=[
     [Input('time-dropdown', 'value')]
 )
 def update_surface_temp_graph(selected_time):
-    if selected_time is None:
+    if selected_time is None or ds is None:
         return go.Figure()
 
     # Extract the surface temperature data for the selected time step
