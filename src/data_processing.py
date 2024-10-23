@@ -54,4 +54,4 @@ kpis = ['TSurf', 'AirTempAtVeg', 'Albedo']
 
 # Run the extraction
 extract_kpis_from_nc(input_file_statusquo, output_file_statusquo, kpis)
-#extract_kpis_from_nc(input_file_optimized, output_file_optimized, kpis)
+extract_kpis_from_nc(input_file_optimized, output_file_optimized, kpis)
