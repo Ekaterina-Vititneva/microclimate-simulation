@@ -1,13 +1,16 @@
-body,
+body {
+  font-family: "Roboto", sans-serif;
+}
+
 label {
-  font-family: "Roboto", sans-serif; /* or 'Roboto', sans-serif */
+  font-family: "Roboto", sans-serif;
 }
 
 .dash-dropdown {
-  font-family: "Roboto", sans-serif; /* Applies to dropdown text */
+  font-family: "Roboto", sans-serif;
 }
 
 h1,
 h5 {
-  font-family: "Roboto", sans-serif; /* Applies to headers */
+  font-family: "Roboto", sans-serif;
 }
