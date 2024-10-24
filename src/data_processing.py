@@ -1,6 +1,15 @@
 import os
 import xarray as xr
-from kpi_config import kpi_options
+import json
+
+# Load the KPI configuration from the JSON file
+json_config_path = os.path.join(os.getcwd(), 'config', 'kpi_config.json')
+
+with open(json_config_path, 'r') as f:
+    kpi_config = json.load(f)
+
+# Extract KPI options from the JSON config
+kpi_options = kpi_config['kpi_options']
 
 def extract_kpis_from_nc(input_path, output_path, kpi_variables):
     print(f"Attempting to open file: {input_path}")
@@ -46,9 +55,6 @@ input_file_optimized = os.path.join(optimized_dir, input_file + extension)
 # Fix the output file path construction
 output_file_statusquo = os.path.join(statusquo_dir, input_file + "_light" + extension)
 output_file_optimized = os.path.join(optimized_dir, input_file + "_light" + extension)
-
-# The KPIs to keep
-#kpis = ['TSurf', 'AirTempAtVeg', 'Albedo']
 
 # Run the extraction for the status quo dataset
 print("Processing status quo file...")

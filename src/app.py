@@ -46,8 +46,8 @@ def get_global_range(kpi):
 
 app.layout = html.Div([
     html.H1("Microclimate Simulation Dashboard - ENVI-met Playground Project"),
-    
-    # Row with dropdowns, slider, and KPI description
+
+    # Row with dropdowns, slider, KPI description, and hourly plot
     html.Div([
         # Controls (dropdowns and slider)
         html.Div([
@@ -58,7 +58,6 @@ app.layout = html.Div([
                 value=kpi_options[0],  # Default value
                 clearable=False
             ),
-
             html.Label("Select Time Step:"),
             dcc.Slider(
                 id='time-slider',
@@ -68,7 +67,6 @@ app.layout = html.Div([
                 marks={i: str(i) for i in range(len(time_steps))},
                 step=1
             ),
-
             html.Label("Select Vertical Level (GridsK) for WindSpd:"),
             dcc.Dropdown(
                 id='vertical-level-dropdown',
@@ -77,26 +75,26 @@ app.layout = html.Div([
                 clearable=False,
                 style={'display': 'none'}
             ),
-        ], style={'width': '33%'}),  # 1/3 width for controls, reduced padding
+        ], style={'width': '33%'}),  # 1/3 width for controls
 
         # Description area
         html.Div([
             html.H3("KPI Description"),
             html.P(id='kpi-description', style={'white-space': 'pre-wrap'})
-        ], style={'width': '67%', 'margin-left': '50px'})  # 2/3 width for description, reduced padding
+        ], style={'width': '33%', 'margin-left': '10px'}),  # 1/3 width for description
+
+        # Hourly plot placed in the top-right corner with reduced height
+        html.Div([
+            dcc.Graph(id='hourly-plot', style={'width': '100%', 'height': '250px'})  # Adjusted height here
+        ], style={'width': '33%', 'margin-left': '10px'})  # 1/3 width for hourly plot
     ], style={'display': 'flex', 'flex-direction': 'row'}),  # Flexbox for layout
 
-    # Three graphs to show the comparison side by side
+    # Row for heatmaps (moved down)
     html.Div([
         dcc.Graph(id='statusquo-graph', style={'flex': 1}),
         dcc.Graph(id='optimized-graph', style={'flex': 1}),
         dcc.Graph(id='difference-graph', style={'flex': 1})
-    ], style={'display': 'flex', 'flex-direction': 'row', 'height': '55vh'}),
-
-    # Hourly plot showing the min-max range and mean over time for both scenarios
-    html.Div([
-        dcc.Graph(id='hourly-plot', style={'width': '100%'})
-    ], style={'height': '40vh'})
+    ], style={'display': 'flex', 'flex-direction': 'row', 'height': '55vh'})
 ])
 
 @app.callback(
@@ -157,7 +155,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         title=f"Status Quo: {selected_kpi} (Time: {selected_time})",
         zmin=global_min, zmax=global_max,
         width=heatmap_size, height=heatmap_size,
-        labels={"color": f"{selected_kpi} Value"}
+        labels={"color": f"{selected_kpi} Value"}, 
     )
 
     optimized_fig = px.imshow(
@@ -177,6 +175,30 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         width=heatmap_size, height=heatmap_size,
         labels={"color": "Difference"}
     )
+    
+    font_size = 12
+
+    statusquo_fig.update_layout(
+        font=dict(size=font_size),
+        xaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
+        yaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
+        coloraxis_colorbar=dict(title_font=dict(size=font_size - 1), tickfont=dict(size=font_size - 1))
+    )
+    optimized_fig.update_layout(
+        font=dict(size=font_size),
+        xaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
+        yaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
+        coloraxis_colorbar=dict(title_font=dict(size=font_size - 1), tickfont=dict(size=font_size - 1))
+    )
+    difference_fig.update_layout(
+        font=dict(size=font_size),
+        xaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
+        yaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
+        coloraxis_colorbar=dict(title_font=dict(size=font_size - 1), tickfont=dict(size=font_size - 1))
+    )
+
+    # Similarly for optimized_fig and difference_fig
+
 
     # Calculate hourly mean, min, and max for the selected KPI (both status quo and optimized)
     statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
@@ -229,11 +251,33 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     ))
 
     hourly_fig.update_layout(
-        title=f'Mean {selected_kpi} with Min-Max Range (Status Quo vs Optimized)',
-        xaxis_title='Hour of the Day',
-        yaxis_title=f'{selected_kpi} Value',
-        height=500
-    )
+    title=f'Mean {selected_kpi} with Min-Max Range (Status Quo vs Optimized)',
+    xaxis_title='Hour of the Day',
+    yaxis_title=f'{selected_kpi} Value',
+    height=250,
+    legend=dict(
+        font=dict(size=10),  # Smaller font size for the legend
+        orientation='h',  # Horizontal legend
+        yanchor='top',
+        y=-0.4,  # Position legend inside the graph area
+        xanchor='center',
+        x=0.5
+    ),
+    font=dict(
+        size=10
+    ),
+    xaxis=dict(
+        title='Hour of the Day',  # Set x-axis title
+        side='top',  # Move x-axis label to the top
+        title_font=dict(size=12),  
+        tickfont=dict(size=9)
+    ),
+    yaxis=dict(
+        title_font=dict(size=12), 
+        tickfont=dict(size=9)
+    ),
+    margin=dict(t=100, b=0)  # Adjust top margin to move title up
+)
 
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
