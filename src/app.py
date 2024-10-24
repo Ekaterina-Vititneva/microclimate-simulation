@@ -47,6 +47,9 @@ heatmap_size = 500  # Variable to control heatmap size (height and width)
 
 app = dash.Dash(__name__, external_stylesheets=['/assets/custom.css'])
 
+# Expose the underlying Flask server instance for Gunicorn
+server = app.server
+
 # Function to calculate global min and max for a KPI across all times and heights
 def get_global_range(kpi):
     statusquo_min = float(ds_statusquo[kpi].min().values)

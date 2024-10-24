@@ -27,6 +27,7 @@ scenarios including some short information about what and why it is shown.
 
 - [More info about the example](https://envi-met.info/doku.php?id=examples:playground)
 - [KPIs description](https://envi-met.info/doku.php?id=filereference:output:atmosphere)
+  ![The Playground model](https://envi-met.info/lib/exe/fetch.php?w=800&tok=812d4d&media=examples:2024-09-13_21h01_27.png)
 
 ## Set up
 
