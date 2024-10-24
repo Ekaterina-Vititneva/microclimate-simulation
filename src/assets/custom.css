@@ -1,0 +1,15 @@
+body {
+  font-family: "Arial", sans-serif; /* or 'Roboto', sans-serif */
+}
+
+label {
+  font-family: "Arial", sans-serif; /* Applies to form labels */
+}
+
+.dash-dropdown {
+  font-family: "Arial", sans-serif; /* Applies to dropdown text */
+}
+
+h1 {
+  font-family: "Arial", sans-serif; /* Applies to headers */
+}

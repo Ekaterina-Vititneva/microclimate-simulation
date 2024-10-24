@@ -23,7 +23,7 @@ ds_optimized = xr.open_dataset(optimized_file_path)
 # Get the range of GridsK (vertical levels) for WindSpd
 vertical_levels = list(ds_statusquo['GridsK'].values)
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=['/assets/custom.css'])
 
 app.layout = html.Div([
     html.H1("Microclimate Simulation Dashboard"),
