@@ -3,13 +3,8 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import xarray as xr
 import pandas as pd
-import numpy as np  # <- Already imported for NumPy
-import matplotlib.pyplot as plt
-import seaborn as sns
-from io import BytesIO
-import base64
-import plotly.express as px  # <- Add this import for Plotly Express
-import plotly.graph_objects as go
+import numpy as np  # Already imported for NumPy
+import plotly.express as px  # Import for Plotly Express
 from kpi_config import kpi_options
 
 # Paths to the datasets
@@ -48,16 +43,13 @@ app.layout = html.Div([
     ),
     
     # Two graphs to show the comparison side by side
-    
-    # In the layout:
     html.Div([
-        dcc.Graph(id='statusquo-graph', style={'flex': 1}),  # Make the graphs flexible
+        dcc.Graph(id='statusquo-graph', style={'flex': 1}),
         dcc.Graph(id='optimized-graph', style={'flex': 1})
     ], style={'display': 'flex', 'flex-direction': 'row'})
-
 ])
 
-# Update callback for the two graphs
+# Update callback for the two heatmaps
 @app.callback(
     [Output('statusquo-graph', 'figure'),
      Output('optimized-graph', 'figure')],
@@ -75,43 +67,28 @@ def update_graphs(selected_kpi, selected_level):
         # For other KPIs, get the 2D data without vertical dimension
         statusquo_data = ds_statusquo[selected_kpi].isel(Time=0).values
         optimized_data = ds_optimized[selected_kpi].isel(Time=0).values
-    
-    # Flatten the data arrays for both Status Quo and Optimized scenarios
-    statusquo_data_flat = statusquo_data.flatten()
-    optimized_data_flat = optimized_data.flatten()
 
-    # Generate grid points for X and Y dimensions
-    grid_x, grid_y = statusquo_data.shape[-2], statusquo_data.shape[-1]
-    grid_x_vals = np.tile(np.arange(grid_x), grid_y)
-    grid_y_vals = np.repeat(np.arange(grid_y), grid_x)
-
-    # Ensure the lengths match
-    assert len(statusquo_data_flat) == len(optimized_data_flat) == len(grid_x_vals) == len(grid_y_vals)
-
-    # Create a DataFrame for plotting
-    statusquo_df = pd.DataFrame({
-        'Value': statusquo_data_flat,
-        'Grid X': grid_x_vals,
-        'Grid Y': grid_y_vals
-    })
-
-    optimized_df = pd.DataFrame({
-        'Value': optimized_data_flat,
-        'Grid X': grid_x_vals,
-        'Grid Y': grid_y_vals
-    })
-    
-    color_scale = 'RdBu'
+    color_scale = 'RdBu_r'
     plot_size = 700
 
-    # Create the figures for Status Quo and Optimized scenarios
-    statusquo_fig = px.scatter(statusquo_df, x='Grid X', y='Grid Y', color='Value',
-                               title=f"Status Quo: {selected_kpi}",
-                               color_continuous_scale=color_scale, height=plot_size, width=plot_size)
-    
-    optimized_fig = px.scatter(optimized_df, x='Grid X', y='Grid Y', color='Value',
-                               title=f"Optimized: {selected_kpi}",
-                               color_continuous_scale=color_scale, height=plot_size, width=plot_size)
+    # Create the heatmaps using Plotly's imshow function
+    statusquo_fig = px.imshow(
+        statusquo_data,
+        color_continuous_scale=color_scale,
+        title=f"Status Quo: {selected_kpi}",
+        aspect='auto',
+        labels={"color": f"{selected_kpi} Value"},
+        height=plot_size, width=plot_size
+    )
+
+    optimized_fig = px.imshow(
+        optimized_data,
+        color_continuous_scale=color_scale,
+        title=f"Optimized: {selected_kpi}",
+        aspect='auto',
+        labels={"color": f"{selected_kpi} Value"},
+        height=plot_size, width=plot_size
+    )
 
     return statusquo_fig, optimized_fig
 
