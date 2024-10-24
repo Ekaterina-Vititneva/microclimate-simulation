@@ -25,6 +25,9 @@ scenarios including some short information about what and why it is shown.
 
 ![Dashboard](assets/dashboard.png)
 
+- [More info about the example](https://envi-met.info/doku.php?id=examples:playground)
+- [KPIs description](https://envi-met.info/doku.php?id=filereference:output:atmosphere)
+
 ## Set up
 
 ### Running locally
@@ -42,4 +45,3 @@ pip install -r requirements-dev.txt
 ## Details
 
 - [File extensions](data/file_extensions.md)
-- [KPIs description (assumptions)](notebooks/kpis_description.md)

@@ -18,11 +18,17 @@ with open(json_config_path, 'r') as f:
     kpi_config = json.load(f)
 
 # Get the project root directory (one level up from src)
-base_dir = os.path.dirname(os.getcwd())
+#base_dir = os.path.dirname(os.getcwd())
+
+# Get one level up from the current directory
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Access the options and descriptions
 kpi_options = kpi_config['kpi_options']
 kpi_descriptions = kpi_config['kpi_descriptions']
+
+print("Current working directory:", os.getcwd())
+print("Files in current directory:", os.listdir())
 
 # Paths to the datasets
 statusquo_file_path = os.path.join(base_dir, 'data', 'statusquo', 'Playground_2024-07-06_04.00.00_light.nc')
