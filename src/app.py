@@ -8,10 +8,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.metrics import r2_score
 import json
+import os
 
-# Load the KPI configuration from JSON file
-with open('./config/kpi_config.json') as f:
+# Get the absolute path to the config folder based on the current script directory
+config_dir = os.path.join(os.path.dirname(__file__), 'config')
+json_config_path = os.path.join(config_dir, 'kpi_config.json')
+
+with open(json_config_path, 'r') as f:
     kpi_config = json.load(f)
+
 
 # Access the options and descriptions
 kpi_options = kpi_config['kpi_options']
@@ -176,7 +181,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         labels={"color": "Difference"}
     )
     
-    font_size = 12
+    font_size = 11
 
     statusquo_fig.update_layout(
         font=dict(size=font_size),

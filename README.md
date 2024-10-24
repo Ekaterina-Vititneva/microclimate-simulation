@@ -23,6 +23,8 @@ scenarios including some short information about what and why it is shown.
 - The output data of both simulation runs
   - netCDF file format
 
+![Dashboard](assets/dashboard.png)
+
 ## Set up
 
 ### Running locally
