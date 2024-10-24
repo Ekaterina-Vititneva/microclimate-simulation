@@ -1,5 +1,6 @@
 import os
 import xarray as xr
+from kpi_config import kpi_options
 
 def extract_kpis_from_nc(input_path, output_path, kpi_variables):
     print(f"Attempting to open file: {input_path}")
@@ -47,12 +48,12 @@ output_file_statusquo = os.path.join(statusquo_dir, input_file + "_light" + exte
 output_file_optimized = os.path.join(optimized_dir, input_file + "_light" + extension)
 
 # The KPIs to keep
-kpis = ['TSurf', 'AirTempAtVeg', 'Albedo']
+#kpis = ['TSurf', 'AirTempAtVeg', 'Albedo']
 
 # Run the extraction for the status quo dataset
 print("Processing status quo file...")
-extract_kpis_from_nc(input_file_statusquo, output_file_statusquo, kpis)
+extract_kpis_from_nc(input_file_statusquo, output_file_statusquo, kpi_options)
 
 # Run the extraction for the optimized dataset
 print("Processing optimized file...")
-extract_kpis_from_nc(input_file_optimized, output_file_optimized, kpis)
+extract_kpis_from_nc(input_file_optimized, output_file_optimized, kpi_options)
