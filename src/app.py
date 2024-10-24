@@ -48,10 +48,13 @@ app.layout = html.Div([
     ),
     
     # Two graphs to show the comparison side by side
+    
+    # In the layout:
     html.Div([
-        dcc.Graph(id='statusquo-graph'),  # Status Quo plot
-        dcc.Graph(id='optimized-graph')   # Optimized plot
-    ], style={'display': 'flex'})  # Arrange side by side
+        dcc.Graph(id='statusquo-graph', style={'flex': 1}),  # Make the graphs flexible
+        dcc.Graph(id='optimized-graph', style={'flex': 1})
+    ], style={'display': 'flex', 'flex-direction': 'row'})
+
 ])
 
 # Update callback for the two graphs
@@ -99,15 +102,16 @@ def update_graphs(selected_kpi, selected_level):
     })
     
     color_scale = 'RdBu'
+    plot_size = 700
 
     # Create the figures for Status Quo and Optimized scenarios
     statusquo_fig = px.scatter(statusquo_df, x='Grid X', y='Grid Y', color='Value',
                                title=f"Status Quo: {selected_kpi}",
-                               color_continuous_scale=color_scale, height=700, width=700)
+                               color_continuous_scale=color_scale, height=plot_size, width=plot_size)
     
     optimized_fig = px.scatter(optimized_df, x='Grid X', y='Grid Y', color='Value',
                                title=f"Optimized: {selected_kpi}",
-                               color_continuous_scale=color_scale, height=700, width=700)
+                               color_continuous_scale=color_scale, height=plot_size, width=plot_size)
 
     return statusquo_fig, optimized_fig
 
