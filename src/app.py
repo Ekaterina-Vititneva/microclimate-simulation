@@ -17,14 +17,16 @@ json_config_path = os.path.join(config_dir, 'kpi_config.json')
 with open(json_config_path, 'r') as f:
     kpi_config = json.load(f)
 
+# Get the project root directory (one level up from src)
+base_dir = os.path.dirname(os.getcwd())
 
 # Access the options and descriptions
 kpi_options = kpi_config['kpi_options']
 kpi_descriptions = kpi_config['kpi_descriptions']
 
 # Paths to the datasets
-statusquo_file_path = '../data/statusquo/Playground_2024-07-06_04.00.00_light.nc'
-optimized_file_path = '../data/opti/Playground_2024-07-06_04.00.00_light.nc'
+statusquo_file_path = os.path.join(base_dir, 'data', 'statusquo', 'Playground_2024-07-06_04.00.00_light.nc')
+optimized_file_path = os.path.join(base_dir, 'data', 'opti', 'Playground_2024-07-06_04.00.00_light.nc')
 
 # Load the datasets
 ds_statusquo = xr.open_dataset(statusquo_file_path)

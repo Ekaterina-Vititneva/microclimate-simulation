@@ -1,12 +1,22 @@
 {
-  "kpi_options": ["TSurf", "WindSpd", "WindDir", "RelHum", "TMRT", "TMRTBiomet", "Objects"],
+  "kpi_options": [
+    "TSurf",
+    "WindSpd",
+    "RelHum",
+    "TMRT",
+    "T",
+    "TAirBiomet",
+    "QLWSumAllFluxes",
+    "QSWDiff"
+  ],
   "kpi_descriptions": {
-    "TSurf": "Surface temperature, important for analyzing heat distribution.",
-    "WindSpd": "Wind speed at various vertical levels, affecting air flow and thermal comfort.",
-    "WindDir": "Wind direction, indicating the angle from which the wind is blowing.",
-    "RelHum": "Relative humidity in the atmosphere, indicating the percentage of moisture in the air.",
-    "TMRT": "Mean radiant temperature, a measure of the effective radiation temperature felt by a body.",
-    "TMRTBiomet": "Biometeorological index for mean radiant temperature, indicating its effect on human comfort.",
-    "Objects": "Count or representation of objects within the model, such as buildings or vegetation."
+    "TSurf": "Surface temperature is critical for understanding heat distribution across different areas, helping assess thermal comfort and heat accumulation.",
+    "WindSpd": "Wind speed is essential for analyzing airflow and its effect on temperature and thermal comfort in the environment, impacting cooling and pollutant dispersion.",
+    "RelHum": "Relative humidity measures moisture in the air, which influences human comfort levels and environmental conditions, especially during heatwaves or cold periods.",
+    "TMRT": "Mean radiant temperature is a key indicator in thermal comfort assessments, representing the combined effect of radiation from surrounding surfaces on a body.",
+    "T": "Air temperature is a primary metric for evaluating heat conditions, affecting both thermal comfort and environmental modeling in urban settings.",
+    "TAirBiomet": "Biometeorological air temperature index provides insights into how air temperature influences human comfort, offering a detailed evaluation for urban planning.",
+    "QLWSumAllFluxes": "The total of all longwave radiation fluxes, which helps in understanding the heat exchange between surfaces and the atmosphere, crucial for thermal balance analysis.",
+    "QSWDiff": "Diffuse shortwave radiation measures scattered sunlight, contributing to overall radiation balance and its effect on temperatures and shading in urban areas."
   }
 }
