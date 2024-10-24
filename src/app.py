@@ -6,7 +6,16 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from kpi_config import kpi_options, kpi_descriptions
+#from kpi_config import kpi_options, kpi_descriptions
+import json
+
+# Load the KPI configuration from JSON file
+with open('./config/kpi_config.json') as f:
+    kpi_config = json.load(f)
+
+# Access the options and descriptions
+kpi_options = kpi_config['kpi_options']
+kpi_descriptions = kpi_config['kpi_descriptions']
 
 # Paths to the datasets
 statusquo_file_path = '../data/statusquo/Playground_2024-07-06_04.00.00_light.nc'
