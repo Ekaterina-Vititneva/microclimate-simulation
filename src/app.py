@@ -65,37 +65,33 @@ app.layout = html.Div([
                 clearable=False,
                 style={'display': 'none'}
             ),
-        ], style={'width': '33%', 'padding': '5px'}),  # 1/3 width for controls
+        ], style={'width': '33%'}),  # 1/3 width for controls, reduced padding
 
         # Description area
         html.Div([
             html.H3("KPI Description"),
             html.P(id='kpi-description', style={'white-space': 'pre-wrap'})
-        ], style={'width': '66%', 'padding': '10px'})  # 2/3 width for description
+        ], style={'width': '67%', 'margin-left': '50px'})  # 2/3 width for description, reduced padding
     ], style={'display': 'flex', 'flex-direction': 'row'}),  # Flexbox for layout
 
     # Three graphs to show the comparison side by side
     html.Div([
-        dcc.Graph(id='statusquo-graph', style={'flex': 1, 'margin-right': '5px'}),
-        dcc.Graph(id='optimized-graph', style={'flex': 1, 'margin-right': '5px'}),
+        dcc.Graph(id='statusquo-graph', style={'flex': 1}),
+        dcc.Graph(id='optimized-graph', style={'flex': 1,}),
         dcc.Graph(id='difference-graph', style={'flex': 1})
-    ], style={'display': 'flex', 'flex-direction': 'row', 'height': '75vh', 'padding': '0px', 'margin': '0px'}),
+    ], style={'display': 'flex', 'flex-direction': 'row', 'height': '55vh'}),
 
-    # Boxplot section
+    # Hourly plot showing the min-max range, mean, and std dev over time for both scenarios
     html.Div([
-        dcc.Graph(id='statusquo-boxplot', style={'flex': 1, 'margin-right': '5px'}),
-        dcc.Graph(id='optimized-boxplot', style={'flex': 1, 'margin-right': '5px'}),
-        dcc.Graph(id='difference-boxplot', style={'flex': 1})
-    ], style={'display': 'flex', 'flex-direction': 'row', 'height': '40vh', 'padding': '0px', 'margin': '0px'})
+        dcc.Graph(id='hourly-plot', style={'width': '100%'})
+    ], style={'height': '40vh'})
 ])
 
 @app.callback(
     [Output('statusquo-graph', 'figure'),
      Output('optimized-graph', 'figure'),
      Output('difference-graph', 'figure'),
-     Output('statusquo-boxplot', 'figure'),
-     Output('optimized-boxplot', 'figure'),
-     Output('difference-boxplot', 'figure'),
+     Output('hourly-plot', 'figure'),
      Output('vertical-level-dropdown', 'style'),
      Output('kpi-description', 'children')],
     [Input('kpi-dropdown', 'value'),
@@ -117,8 +113,6 @@ def update_graphs(selected_kpi, selected_time, selected_level):
 
     difference_data = statusquo_data - optimized_data
     color_scale = 'RdBu_r'
-    plot_height = 500
-    plot_width = 500
 
     # Create the heatmaps
     statusquo_fig = px.imshow(
@@ -127,8 +121,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         title=f"Status Quo: {selected_kpi} (Time: {selected_time})",
         zmin=global_min, zmax=global_max,
         aspect='auto',
-        labels={"color": f"{selected_kpi} Value"},
-        height=plot_height, width=plot_width
+        labels={"color": f"{selected_kpi} Value"}
     )
 
     optimized_fig = px.imshow(
@@ -137,8 +130,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         title=f"Optimized: {selected_kpi} (Time: {selected_time})",
         zmin=global_min, zmax=global_max,
         aspect='auto',
-        labels={"color": f"{selected_kpi} Value"},
-        height=plot_height, width=plot_width
+        labels={"color": f"{selected_kpi} Value"}
     )
 
     difference_fig = px.imshow(
@@ -147,29 +139,93 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         title=f"Difference (Status Quo - Optimized): {selected_kpi} (Time: {selected_time})",
         zmin=-abs(global_max - global_min), zmax=abs(global_max - global_min),
         aspect='auto',
-        labels={"color": "Difference"},
-        height=plot_height, width=plot_width
+        labels={"color": "Difference"}
     )
 
-    # Create the boxplots
-    statusquo_boxplot = px.box(pd.DataFrame(statusquo_data.flatten(), columns=[f"{selected_kpi} Value"]),
-                               title=f"Status Quo {selected_kpi} Boxplot (Time: {selected_time})",
-                               height=200)
-    
-    optimized_boxplot = px.box(pd.DataFrame(optimized_data.flatten(), columns=[f"{selected_kpi} Value"]),
-                               title=f"Optimized {selected_kpi} Boxplot (Time: {selected_time})",
-                               height=200)
-    
-    difference_boxplot = px.box(pd.DataFrame(difference_data.flatten(), columns=["Difference"]),
-                                title=f"Difference (Status Quo - Optimized) Boxplot (Time: {selected_time})",
-                                height=200)
+    # Calculate hourly mean, min, max, and std for the selected KPI (both status quo and optimized)
+    statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
+    statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
+    statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+    statusquo_hourly_std = ds_statusquo[selected_kpi].std(dim=['GridsI', 'GridsJ']).values
+
+    optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
+    optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
+    optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+    optimized_hourly_std = ds_optimized[selected_kpi].std(dim=['GridsI', 'GridsJ']).values
+
+    time_hours = [str(t)[11:13] for t in ds_statusquo['Time'].values]  # Extract hour for x-axis
+
+    # Create the hourly plot with mean, min-max range, and std deviation
+    hourly_fig = go.Figure()
+
+    # Min-max range shaded area for status quo
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=statusquo_hourly_max,
+        mode='lines', line=dict(width=0), showlegend=False,
+        hoverinfo='skip', name='Max Status Quo'
+    ))
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=statusquo_hourly_min,
+        mode='lines', fill='tonexty', fillcolor='rgba(0, 100, 250, 0.2)',
+        line=dict(width=0), name='Min-Max Range Status Quo', hoverinfo='skip'
+    ))
+
+    # Mean ± std dev shaded area for status quo
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=statusquo_hourly_mean + statusquo_hourly_std,
+        mode='lines', line=dict(width=0), showlegend=False, hoverinfo='skip'
+    ))
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=statusquo_hourly_mean - statusquo_hourly_std,
+        mode='lines', fill='tonexty', fillcolor='rgba(0, 100, 250, 0.2)',
+        line=dict(width=0), name='Mean ± Std Dev Status Quo', hoverinfo='skip'
+    ))
+
+    # Mean line for status quo
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=statusquo_hourly_mean, mode='lines+markers', line=dict(color='blue', width=2),
+        name='Mean Status Quo', hoverinfo='x+y'
+    ))
+
+    # Min-max range shaded area for optimized
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=optimized_hourly_max,
+        mode='lines', line=dict(width=0), showlegend=False,
+        hoverinfo='skip', name='Max Optimized'
+    ))
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=optimized_hourly_min,
+        mode='lines', fill='tonexty', fillcolor='rgba(250, 100, 0, 0.2)',
+        line=dict(width=0), name='Min-Max Range Optimized', hoverinfo='skip'
+    ))
+
+    # Mean ± std dev shaded area for optimized
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=optimized_hourly_mean + optimized_hourly_std,
+        mode='lines', line=dict(width=0), showlegend=False, hoverinfo='skip'
+    ))
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=optimized_hourly_mean - optimized_hourly_std,
+        mode='lines', fill='tonexty', fillcolor='rgba(250, 100, 0, 0.2)',
+        line=dict(width=0), name='Mean ± Std Dev Optimized', hoverinfo='skip'
+    ))
+
+    # Mean line for optimized
+    hourly_fig.add_trace(go.Scatter(
+        x=time_hours, y=optimized_hourly_mean, mode='lines+markers', line=dict(color='red', width=2),
+        name='Mean Optimized', hoverinfo='x+y'
+    ))
+
+    hourly_fig.update_layout(
+        title=f'Mean {selected_kpi} with Min-Max Range and Std Dev (Status Quo vs Optimized)',
+        xaxis_title='Hour of the Day',
+        yaxis_title=f'{selected_kpi} Value',
+        height=500
+    )
 
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
-    return (statusquo_fig, optimized_fig, difference_fig,
-            statusquo_boxplot, optimized_boxplot, difference_boxplot,
-            dropdown_style, description)
-
+    return (statusquo_fig, optimized_fig, difference_fig, hourly_fig, dropdown_style, description)
 
 if __name__ == '__main__':
     app.run_server(debug=True)

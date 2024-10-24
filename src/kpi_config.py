@@ -1,6 +1,17 @@
-kpi_options = ['TSurf', 'WindSpd']
+kpi_options = [
+    'TSurf', 'WindSpd', 'WindDir', 'WindDirAtVeg', 'RelHum', 'RelHumAtVeg',
+    'TMRT', 'TMRTAtVeg', 'TMRTBiomet', 'Objects'
+]
 
 kpi_descriptions = {
     "TSurf": "Surface temperature, important for analyzing heat distribution.",
     "WindSpd": "Wind speed at various vertical levels, affecting air flow and thermal comfort.",
+    "WindDir": "Wind direction, indicating the angle from which the wind is blowing.",
+    "WindDirAtVeg": "Wind direction at vegetation levels, representing airflow near plants.",
+    "RelHum": "Relative humidity in the atmosphere, indicating the percentage of moisture in the air.",
+    "RelHumAtVeg": "Relative humidity at vegetation levels, representing moisture near plant surfaces.",
+    "TMRT": "Mean radiant temperature, a measure of the effective radiation temperature felt by a body.",
+    "TMRTAtVeg": "Mean radiant temperature at vegetation levels, representing the radiation effect near plants.",
+    "TMRTBiomet": "Biometeorological index for mean radiant temperature, indicating its effect on human comfort.",
+    "Objects": "Count or representation of objects within the model, such as buildings or vegetation."
 }
