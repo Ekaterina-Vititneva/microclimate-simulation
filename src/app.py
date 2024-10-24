@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-#from kpi_config import kpi_options, kpi_descriptions
 import json
 
 # Load the KPI configuration from JSON file
@@ -42,7 +41,7 @@ def get_global_range(kpi):
     return global_min, global_max
 
 app.layout = html.Div([
-    html.H1("Microclimate Simulation Dashboard"),
+    html.H1("Microclimate Simulation Dashboard - ENVI-met Playground Project"),
     
     # Row with dropdowns, slider, and KPI description
     html.Div([
@@ -86,7 +85,7 @@ app.layout = html.Div([
     # Three graphs to show the comparison side by side
     html.Div([
         dcc.Graph(id='statusquo-graph', style={'flex': 1}),
-        dcc.Graph(id='optimized-graph', style={'flex': 1,}),
+        dcc.Graph(id='optimized-graph', style={'flex': 1}),
         dcc.Graph(id='difference-graph', style={'flex': 1})
     ], style={'display': 'flex', 'flex-direction': 'row', 'height': '55vh'}),
 
@@ -110,12 +109,21 @@ app.layout = html.Div([
 def update_graphs(selected_kpi, selected_time, selected_level):
     global_min, global_max = get_global_range(selected_kpi)
 
-    if selected_kpi == 'WindSpd':
-        selected_level = int(selected_level)
-        statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time, GridsK=selected_level).values
-        optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time, GridsK=selected_level).values
-        dropdown_style = {'display': 'block'}
+    # Check if the selected KPI has 'GridsK' dimension
+    if 'GridsK' in ds_statusquo[selected_kpi].dims:
+        # 3D KPIs with GridsK
+        if selected_kpi == 'WindSpd':
+            selected_level = int(selected_level)
+            statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time, GridsK=selected_level).values
+            optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time, GridsK=selected_level).values
+            dropdown_style = {'display': 'block'}
+        else:
+            # For other 3D KPIs, take the mean across the 'GridsK' dimension
+            statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time).mean(dim='GridsK').values
+            optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time).mean(dim='GridsK').values
+            dropdown_style = {'display': 'none'}
     else:
+        # 2D KPIs (no 'GridsK' dimension)
         statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time).values
         optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time).values
         dropdown_style = {'display': 'none'}
@@ -152,15 +160,15 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     )
 
     # Calculate hourly mean, min, max, and std for the selected KPI (both status quo and optimized)
-    statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-    statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-    statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
-    statusquo_hourly_std = ds_statusquo[selected_kpi].std(dim=['GridsI', 'GridsJ']).values
+    statusquo_hourly_mean = np.round(ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values, 2)
+    statusquo_hourly_min = np.round(ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values, 2)
+    statusquo_hourly_max = np.round(ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values, 2)
+    statusquo_hourly_std = np.round(ds_statusquo[selected_kpi].std(dim=['GridsI', 'GridsJ']).values, 2)
 
-    optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-    optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-    optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
-    optimized_hourly_std = ds_optimized[selected_kpi].std(dim=['GridsI', 'GridsJ']).values
+    optimized_hourly_mean = np.round(ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values, 2)
+    optimized_hourly_min = np.round(ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values, 2)
+    optimized_hourly_max = np.round(ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values, 2)
+    optimized_hourly_std = np.round(ds_optimized[selected_kpi].std(dim=['GridsI', 'GridsJ']).values, 2)
 
     time_hours = [str(t)[11:13] for t in ds_statusquo['Time'].values]  # Extract hour for x-axis
 
@@ -169,59 +177,61 @@ def update_graphs(selected_kpi, selected_time, selected_level):
 
     # Min-max range shaded area for status quo
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_max,
+        x=time_hours, y=np.round(statusquo_hourly_max, 2),  # Round values to 2 decimal places
         mode='lines', line=dict(width=0), showlegend=False,
         hoverinfo='skip', name='Max Status Quo'
     ))
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_min,
+        x=time_hours, y=np.round(statusquo_hourly_min, 2),  # Round values to 2 decimal places
         mode='lines', fill='tonexty', fillcolor='rgba(0, 100, 250, 0.2)',
         line=dict(width=0), name='Min-Max Range Status Quo', hoverinfo='skip'
     ))
 
     # Mean ± std dev shaded area for status quo
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_mean + statusquo_hourly_std,
+        x=time_hours, y=np.round(statusquo_hourly_mean + statusquo_hourly_std, 2),  # Round values to 2 decimal places
         mode='lines', line=dict(width=0), showlegend=False, hoverinfo='skip'
     ))
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_mean - statusquo_hourly_std,
+        x=time_hours, y=np.round(statusquo_hourly_mean - statusquo_hourly_std, 2),  # Round values to 2 decimal places
         mode='lines', fill='tonexty', fillcolor='rgba(0, 100, 250, 0.2)',
         line=dict(width=0), name='Mean ± Std Dev Status Quo', hoverinfo='skip'
     ))
 
     # Mean line for status quo
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_mean, mode='lines+markers', line=dict(color='blue', width=2),
+        x=time_hours, y=np.round(statusquo_hourly_mean, 2),  # Round values to 2 decimal places
+        mode='lines+markers', line=dict(color='blue', width=2),
         name='Mean Status Quo', hoverinfo='x+y'
     ))
 
     # Min-max range shaded area for optimized
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_max,
+        x=time_hours, y=np.round(optimized_hourly_max, 2),  # Round values to 2 decimal places
         mode='lines', line=dict(width=0), showlegend=False,
         hoverinfo='skip', name='Max Optimized'
     ))
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_min,
+        x=time_hours, y=np.round(optimized_hourly_min, 2),  # Round values to 2 decimal places
         mode='lines', fill='tonexty', fillcolor='rgba(250, 100, 0, 0.2)',
         line=dict(width=0), name='Min-Max Range Optimized', hoverinfo='skip'
     ))
 
     # Mean ± std dev shaded area for optimized
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_mean + optimized_hourly_std,
+        x=time_hours, y=np.round(optimized_hourly_mean + optimized_hourly_std, 2),  # Round values to 2 decimal places
         mode='lines', line=dict(width=0), showlegend=False, hoverinfo='skip'
     ))
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_mean - optimized_hourly_std,
+        x=time_hours, y=np.round(optimized_hourly_mean - optimized_hourly_std, 2),  # Round values to 2 decimal places
         mode='lines', fill='tonexty', fillcolor='rgba(250, 100, 0, 0.2)',
         line=dict(width=0), name='Mean ± Std Dev Optimized', hoverinfo='skip'
     ))
 
     # Mean line for optimized
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_mean, mode='lines+markers', line=dict(color='red', width=2),
+        x=time_hours, y=np.round(optimized_hourly_mean, 2),  # Round values to 2 decimal places
+        mode='lines+markers', line=dict(color='red', width=2),
         name='Mean Optimized', hoverinfo='x+y'
     ))
 
@@ -229,12 +239,15 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         title=f'Mean {selected_kpi} with Min-Max Range and Std Dev (Status Quo vs Optimized)',
         xaxis_title='Hour of the Day',
         yaxis_title=f'{selected_kpi} Value',
-        height=500
+        height=500,
+        yaxis=dict(tickformat=".2f")  # Format the y-axis to 2 decimal places
     )
+
 
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
     return (statusquo_fig, optimized_fig, difference_fig, hourly_fig, dropdown_style, description)
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

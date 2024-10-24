@@ -39,5 +39,5 @@ pip install -r requirements-dev.txt
 
 ## Details
 
-- [File extensions](data\file_extensions.md)
-- [KPIs description (assumptions)](notebooks\kpis_description.md)
+- [File extensions](data/file_extensions.md)
+- [KPIs description (assumptions)](notebooks/kpis_description.md)
