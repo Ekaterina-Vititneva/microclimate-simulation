@@ -10,13 +10,13 @@
     "QSWDiff"
   ],
   "kpi_descriptions": {
-    "TSurf": "Surface temperature is critical for understanding heat distribution across different areas, helping assess thermal comfort and heat accumulation.",
-    "WindSpd": "Wind Speed [m/s] - Wind speed. Vector sum over all 3 axis (West-East, North-South, vertical). Wind speed is essential for analyzing airflow and its effect on temperature and thermal comfort in the environment, impacting cooling and pollutant dispersion.",
-    "RelHum": "Relative Humidity [%] - Relative air humidity (Caution: Depends both on Specific air humidity and air temperature). Relative humidity measures moisture in the air, which influences human comfort levels and environmental conditions, especially during heatwaves or cold periods.",
-    "TMRT": "Mean Radiant Temperature [°C] - The composed radiative fluxes and air temperature for a standing person. Mean radiant temperature is a key indicator in thermal comfort assessments, representing the combined effect of radiation from surrounding surfaces on a body.",
-    "T": "Air temperature is a primary metric for evaluating heat conditions, affecting both thermal comfort and environmental modeling in urban settings.",
-    "TAirBiomet": "Biometeorological air temperature index provides insights into how air temperature influences human comfort, offering a detailed evaluation for urban planning.",
-    "QLWSumAllFluxes": "The total of all longwave radiation fluxes, which helps in understanding the heat exchange between surfaces and the atmosphere, crucial for thermal balance analysis.",
-    "QSWDiff": "Diffuse shortwave radiation measures scattered sunlight, contributing to overall radiation balance and its effect on temperatures and shading in urban areas."
+    "TSurf": "Surface temperature is critical for understanding heat distribution across different areas, helping assess thermal comfort and heat accumulation. It plays a vital role in evaluating urban heat island effects and the efficiency of cooling strategies.",
+    "WindSpd": "Wind Speed [m/s] - Wind speed. Vector sum over all 3 axis (West-East, North-South, vertical). Wind speed is essential for analyzing airflow and its effect on temperature and thermal comfort in the environment, impacting cooling and pollutant dispersion. It also influences pedestrian comfort and air quality in urban landscapes.",
+    "RelHum": "Relative Humidity [%] - Relative air humidity (Caution: Depends both on Specific air humidity and air temperature). Relative humidity measures moisture in the air, which influences human comfort levels and environmental conditions, especially during heatwaves or cold periods. It is key to understanding thermal stress and the potential for heat-related illnesses.",
+    "TMRT": "Mean Radiant Temperature [°C] - The composed radiative fluxes and air temperature for a standing person. Mean radiant temperature is a key indicator in thermal comfort assessments, representing the combined effect of radiation from surrounding surfaces on a body. It helps in assessing the impact of building materials and urban planning on human well-being.",
+    "T": "Air temperature is a primary metric for evaluating heat conditions, affecting both thermal comfort and environmental modeling in urban settings. It is crucial for energy demand forecasting and determining the effectiveness of green infrastructure in mitigating extreme heat.",
+    "TAirBiomet": "Biometeorological air temperature index provides insights into how air temperature influences human comfort, offering a detailed evaluation for urban planning. This index aids in determining optimal outdoor conditions and designing spaces for enhanced comfort.",
+    "QLWSumAllFluxes": "The total of all longwave radiation fluxes, which helps in understanding the heat exchange between surfaces and the atmosphere, crucial for thermal balance analysis. It is particularly important for assessing nighttime cooling and building energy performance.",
+    "QSWDiff": "Diffuse shortwave radiation measures scattered sunlight, contributing to overall radiation balance and its effect on temperatures and shading in urban areas. This metric is useful for evaluating the influence of cloud cover and vegetation on urban microclimates."
   }
 }
