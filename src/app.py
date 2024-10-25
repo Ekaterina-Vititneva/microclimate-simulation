@@ -127,104 +127,95 @@ app.layout = html.Div([
 def update_graphs(selected_kpi, selected_time, selected_level):
     global_min, global_max = get_global_range(selected_kpi)
 
-    # Check if the selected KPI has 'GridsK' dimension
+    # Initialize the dropdown_style as hidden (default)
+    dropdown_style = {'display': 'none'}
+
+    # Initialize statusquo_data and optimized_data to avoid undefined variables
+    statusquo_data = None
+    optimized_data = None
+
     if 'GridsK' in ds_statusquo[selected_kpi].dims:
         # 3D KPIs with GridsK
-        if selected_kpi == 'WindSpd':
-            selected_level = int(selected_level)
-            statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time, GridsK=selected_level).values
-            optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time, GridsK=selected_level).values
-            dropdown_style = {'display': 'block'}
+        if selected_kpi == 'WindSpd' or selected_kpi == 'RelHum' or selected_kpi == 'TMRT' or selected_kpi == 'T' or selected_kpi == 'QSWDiff':
+            # Find the index of the closest GridsK level
+            selected_level_idx = int(np.argmin(np.abs(ds_statusquo['GridsK'].values - float(selected_level))))
+
+            # Assign data for the heatmaps using the nearest GridsK index
+            statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time, GridsK=selected_level_idx).values
+            optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time, GridsK=selected_level_idx).values
+
+            # For WindSpd, aggregate across vertical and horizontal grids for hourly plot
+            statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ', 'GridsK']).values
+            statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ', 'GridsK']).values
+            statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ', 'GridsK']).values
+
+            optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ', 'GridsK']).values
+            optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ', 'GridsK']).values
+            optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ', 'GridsK']).values
+
+            dropdown_style = {'display': 'block'}  # Show vertical level dropdown for WindSpd
         else:
-            # For other 3D KPIs, take the mean across the 'GridsK' dimension
+            # For other 3D KPIs, aggregate across GridsK dimension
             statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time).mean(dim='GridsK').values
             optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time).mean(dim='GridsK').values
-            dropdown_style = {'display': 'none'}
+
+            # Calculate hourly mean, min, max for non-WindSpd 3D KPIs (by averaging GridsI and GridsJ)
+            statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
+            statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
+            statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+
+            optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
+            optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
+            optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
     else:
-        # 2D KPIs (no 'GridsK' dimension)
+        # 2D KPIs (no GridsK dimension)
         statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time).values
         optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time).values
-        dropdown_style = {'display': 'none'}
 
-    # Flatten the data and remove NaN values before calculating R²
+        # Calculate hourly mean, min, max for 2D KPIs
+        statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
+        statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
+        statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+
+        optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
+        optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
+        optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+
+    # Calculate R² for the heatmap difference plot
     statusquo_flat = statusquo_data.flatten()
     optimized_flat = optimized_data.flatten()
-
-    # Remove NaN values from both arrays
     mask = ~np.isnan(statusquo_flat) & ~np.isnan(optimized_flat)
     statusquo_filtered = statusquo_flat[mask]
     optimized_filtered = optimized_flat[mask]
-
-    # Calculate R² only on the filtered (non-NaN) data
-    if len(statusquo_filtered) > 0 and len(optimized_filtered) > 0:
-        r2 = r2_score(statusquo_filtered, optimized_filtered)
-    else:
-        r2 = float('nan')  # If no valid data remains after filtering
+    
+    r2 = r2_score(statusquo_filtered, optimized_filtered) if len(statusquo_filtered) > 0 else float('nan')
 
     difference_data = statusquo_data - optimized_data
     color_scale = 'RdBu_r'
 
-    # Create the heatmaps with controlled size
+    # Heatmap plots for status quo, optimized, and difference
     statusquo_fig = px.imshow(
-        statusquo_data,
-        color_continuous_scale=color_scale,
+        statusquo_data, color_continuous_scale=color_scale,
         title=f"Status Quo: {selected_kpi} (Time: {selected_time})",
-        zmin=global_min, zmax=global_max,
-        width=heatmap_size, height=heatmap_size,
-        labels={"color": f"{selected_kpi} Value"}, 
+        zmin=global_min, zmax=global_max, width=500, height=500,
+        labels={"color": f"{selected_kpi} Value"}
     )
 
     optimized_fig = px.imshow(
-        optimized_data,
-        color_continuous_scale=color_scale,
+        optimized_data, color_continuous_scale=color_scale,
         title=f"Optimized: {selected_kpi} (Time: {selected_time})",
-        zmin=global_min, zmax=global_max,
-        width=heatmap_size, height=heatmap_size,
+        zmin=global_min, zmax=global_max, width=500, height=500,
         labels={"color": f"{selected_kpi} Value"}
     )
 
     difference_fig = px.imshow(
-        difference_data,
-        color_continuous_scale=color_scale,
+        difference_data, color_continuous_scale=color_scale,
         title=f"Difference (Status Quo - Optimized): {selected_kpi} (Time: {selected_time}) R² = {r2:.2f}",
         zmin=-abs(global_max - global_min), zmax=abs(global_max - global_min),
-        width=heatmap_size, height=heatmap_size,
-        labels={"color": "Difference"}
-    )
-    
-    font_size = 11
-
-    statusquo_fig.update_layout(
-        font=dict(size=font_size),
-        xaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
-        yaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
-        coloraxis_colorbar=dict(title_font=dict(size=font_size - 1), tickfont=dict(size=font_size - 1))
-    )
-    optimized_fig.update_layout(
-        font=dict(size=font_size),
-        xaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
-        yaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
-        coloraxis_colorbar=dict(title_font=dict(size=font_size - 1), tickfont=dict(size=font_size - 1))
-    )
-    difference_fig.update_layout(
-        font=dict(size=font_size),
-        xaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
-        yaxis=dict(title_font=dict(size=font_size), tickfont=dict(size=font_size - 1)),
-        coloraxis_colorbar=dict(title_font=dict(size=font_size - 1), tickfont=dict(size=font_size - 1))
+        width=500, height=500, labels={"color": "Difference"}
     )
 
-    # Similarly for optimized_fig and difference_fig
-
-
-    # Calculate hourly mean, min, and max for the selected KPI (both status quo and optimized)
-    statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-    statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-    statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
-
-    optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-    optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-    optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
-
+    # Generate the hourly plot (mean, min, max) for all KPIs
     time_hours = [str(t)[11:13] for t in ds_statusquo['Time'].values]  # Extract hour for x-axis
 
     # Create the hourly plot with mean, min-max range
@@ -267,34 +258,21 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     ))
 
     hourly_fig.update_layout(
-    title=f'Mean {selected_kpi} with Min-Max Range (Status Quo vs Optimized)',
-    xaxis_title='Hour of the Day',
-    yaxis_title=f'{selected_kpi} Value',
-    height=250,
-    legend=dict(
-        font=dict(size=10),  # Smaller font size for the legend
-        orientation='h',  # Horizontal legend
-        yanchor='top',
-        y=-0.4,  # Position legend inside the graph area
-        xanchor='center',
-        x=0.5
-    ),
-    font=dict(
-        size=10
-    ),
-    xaxis=dict(
-        title='Hour of the Day',  # Set x-axis title
-        side='top',  # Move x-axis label to the top
-        title_font=dict(size=12),  
-        tickfont=dict(size=9)
-    ),
-    yaxis=dict(
-        title_font=dict(size=12), 
-        tickfont=dict(size=9)
-    ),
-    margin=dict(t=100, b=0)  # Adjust top margin to move title up
-)
+        title=f'Mean {selected_kpi} with Min-Max Range (Status Quo vs Optimized)',
+        xaxis_title='Hour of the Day',
+        yaxis_title=f'{selected_kpi} Value',
+        height=250,
+        legend=dict(
+            font=dict(size=10), orientation='h', yanchor='top',
+            y=-0.4, xanchor='center', x=0.5
+        ),
+        font=dict(size=10),
+        xaxis=dict(title='Hour of the Day', side='top', title_font=dict(size=12), tickfont=dict(size=9)),
+        yaxis=dict(title_font=dict(size=12), tickfont=dict(size=9)),
+        margin=dict(t=100, b=0)
+    )
 
+    # Set KPI description
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
     return (statusquo_fig, optimized_fig, difference_fig, hourly_fig, dropdown_style, description)

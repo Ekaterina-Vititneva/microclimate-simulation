@@ -11,9 +11,9 @@
   ],
   "kpi_descriptions": {
     "TSurf": "Surface temperature is critical for understanding heat distribution across different areas, helping assess thermal comfort and heat accumulation.",
-    "WindSpd": "Wind speed is essential for analyzing airflow and its effect on temperature and thermal comfort in the environment, impacting cooling and pollutant dispersion.",
-    "RelHum": "Relative humidity measures moisture in the air, which influences human comfort levels and environmental conditions, especially during heatwaves or cold periods.",
-    "TMRT": "Mean radiant temperature is a key indicator in thermal comfort assessments, representing the combined effect of radiation from surrounding surfaces on a body.",
+    "WindSpd": "Wind Speed [m/s] - Wind speed. Vector sum over all 3 axis (West-East, North-South, vertical). Wind speed is essential for analyzing airflow and its effect on temperature and thermal comfort in the environment, impacting cooling and pollutant dispersion.",
+    "RelHum": "Relative Humidity [%] - Relative air humidity (Caution: Depends both on Specific air humidity and air temperature). Relative humidity measures moisture in the air, which influences human comfort levels and environmental conditions, especially during heatwaves or cold periods.",
+    "TMRT": "Mean Radiant Temperature [°C] - The composed radiative fluxes and air temperature for a standing person. Mean radiant temperature is a key indicator in thermal comfort assessments, representing the combined effect of radiation from surrounding surfaces on a body.",
     "T": "Air temperature is a primary metric for evaluating heat conditions, affecting both thermal comfort and environmental modeling in urban settings.",
     "TAirBiomet": "Biometeorological air temperature index provides insights into how air temperature influences human comfort, offering a detailed evaluation for urban planning.",
     "QLWSumAllFluxes": "The total of all longwave radiation fluxes, which helps in understanding the heat exchange between surfaces and the atmosphere, crucial for thermal balance analysis.",
