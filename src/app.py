@@ -83,7 +83,7 @@ app.layout = html.Div([
                 marks={i: str(i) for i in range(len(time_steps))},
                 step=1
             ),
-            html.Label("Select Vertical Level (GridsK) for WindSpd:"),
+            html.Label("Select Vertical Level (GridsK):"),
             dcc.Dropdown(
                 id='vertical-level-dropdown',
                 options=[{'label': f'Level {int(level)}', 'value': level} for level in vertical_levels],
@@ -130,56 +130,40 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     # Initialize the dropdown_style as hidden (default)
     dropdown_style = {'display': 'none'}
 
-    # Initialize statusquo_data and optimized_data to avoid undefined variables
-    statusquo_data = None
-    optimized_data = None
-
-    if 'GridsK' in ds_statusquo[selected_kpi].dims:
-        # 3D KPIs with GridsK
-        if selected_kpi == 'WindSpd' or selected_kpi == 'RelHum' or selected_kpi == 'TMRT' or selected_kpi == 'T' or selected_kpi == 'QSWDiff':
-            # Find the index of the closest GridsK level
-            selected_level_idx = int(np.argmin(np.abs(ds_statusquo['GridsK'].values - float(selected_level))))
-
-            # Assign data for the heatmaps using the nearest GridsK index
-            statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time, GridsK=selected_level_idx).values
-            optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time, GridsK=selected_level_idx).values
-
-            # For WindSpd, aggregate across vertical and horizontal grids for hourly plot
-            statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ', 'GridsK']).values
-            statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ', 'GridsK']).values
-            statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ', 'GridsK']).values
-
-            optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ', 'GridsK']).values
-            optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ', 'GridsK']).values
-            optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ', 'GridsK']).values
-
-            dropdown_style = {'display': 'block'}  # Show vertical level dropdown for WindSpd
+    # Function to compute mean, min, and max for hourly plot dynamically
+    def compute_hourly_stats(ds, kpi, has_grids_k):
+        if has_grids_k:
+            mean = ds[kpi].mean(dim=['GridsI', 'GridsJ', 'GridsK']).values
+            min_val = ds[kpi].min(dim=['GridsI', 'GridsJ', 'GridsK']).values
+            max_val = ds[kpi].max(dim=['GridsI', 'GridsJ', 'GridsK']).values
         else:
-            # For other 3D KPIs, aggregate across GridsK dimension
-            statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time).mean(dim='GridsK').values
-            optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time).mean(dim='GridsK').values
+            mean = ds[kpi].mean(dim=['GridsI', 'GridsJ']).values
+            min_val = ds[kpi].min(dim=['GridsI', 'GridsJ']).values
+            max_val = ds[kpi].max(dim=['GridsI', 'GridsJ']).values
+        return mean, min_val, max_val
 
-            # Calculate hourly mean, min, max for non-WindSpd 3D KPIs (by averaging GridsI and GridsJ)
-            statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-            statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-            statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+    # Determine if the KPI has a GridsK dimension (i.e., it's 3D)
+    has_grids_k = 'GridsK' in ds_statusquo[selected_kpi].dims
 
-            optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-            optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-            optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+    # If GridsK exists (i.e., 3D data like WindSpd), adjust accordingly
+    if has_grids_k:
+        # Find the index of the closest GridsK level
+        selected_level_idx = int(np.argmin(np.abs(ds_statusquo['GridsK'].values - float(selected_level))))
+
+        # Assign data for the heatmaps using the nearest GridsK index
+        statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time, GridsK=selected_level_idx).values
+        optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time, GridsK=selected_level_idx).values
+
+        # Show vertical level dropdown if GridsK dimension exists
+        dropdown_style = {'display': 'block'}
     else:
-        # 2D KPIs (no GridsK dimension)
+        # For 2D KPIs, no need to handle GridsK
         statusquo_data = ds_statusquo[selected_kpi].isel(Time=selected_time).values
         optimized_data = ds_optimized[selected_kpi].isel(Time=selected_time).values
 
-        # Calculate hourly mean, min, max for 2D KPIs
-        statusquo_hourly_mean = ds_statusquo[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-        statusquo_hourly_min = ds_statusquo[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-        statusquo_hourly_max = ds_statusquo[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
-
-        optimized_hourly_mean = ds_optimized[selected_kpi].mean(dim=['GridsI', 'GridsJ']).values
-        optimized_hourly_min = ds_optimized[selected_kpi].min(dim=['GridsI', 'GridsJ']).values
-        optimized_hourly_max = ds_optimized[selected_kpi].max(dim=['GridsI', 'GridsJ']).values
+    # Compute hourly statistics (mean, min, max) for both status quo and optimized scenarios
+    statusquo_hourly_mean, statusquo_hourly_min, statusquo_hourly_max = compute_hourly_stats(ds_statusquo, selected_kpi, has_grids_k)
+    optimized_hourly_mean, optimized_hourly_min, optimized_hourly_max = compute_hourly_stats(ds_optimized, selected_kpi, has_grids_k)
 
     # Calculate R² for the heatmap difference plot
     statusquo_flat = statusquo_data.flatten()
@@ -193,18 +177,21 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     difference_data = statusquo_data - optimized_data
     color_scale = 'RdBu_r'
 
+    # Define a fixed size for the heatmaps
+    heatmap_size = 500  # Square size for height and width
+
     # Heatmap plots for status quo, optimized, and difference
     statusquo_fig = px.imshow(
         statusquo_data, color_continuous_scale=color_scale,
         title=f"Status Quo: {selected_kpi} (Time: {selected_time})",
-        zmin=global_min, zmax=global_max, width=500, height=500,
+        zmin=global_min, zmax=global_max, width=heatmap_size, height=heatmap_size,
         labels={"color": f"{selected_kpi} Value"}
     )
 
     optimized_fig = px.imshow(
         optimized_data, color_continuous_scale=color_scale,
         title=f"Optimized: {selected_kpi} (Time: {selected_time})",
-        zmin=global_min, zmax=global_max, width=500, height=500,
+        zmin=global_min, zmax=global_max, width=heatmap_size, height=heatmap_size,
         labels={"color": f"{selected_kpi} Value"}
     )
 
@@ -212,7 +199,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         difference_data, color_continuous_scale=color_scale,
         title=f"Difference (Status Quo - Optimized): {selected_kpi} (Time: {selected_time}) R² = {r2:.2f}",
         zmin=-abs(global_max - global_min), zmax=abs(global_max - global_min),
-        width=500, height=500, labels={"color": "Difference"}
+        width=heatmap_size, height=heatmap_size, labels={"color": "Difference"}
     )
 
     # Generate the hourly plot (mean, min, max) for all KPIs
@@ -276,6 +263,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
     return (statusquo_fig, optimized_fig, difference_fig, hourly_fig, dropdown_style, description)
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
