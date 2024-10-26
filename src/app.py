@@ -296,7 +296,9 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     fig.update_layout(
         autosize=True,
         margin=dict(l=25, r=25, t=50, b=25),
-        font=dict(size=12)
+        font=dict(size=12),
+        plot_bgcolor='white',  # Set the background of the plot area to white
+        paper_bgcolor='white'  # Set the background outside the plot area to white
     )
 
     # Update axes
