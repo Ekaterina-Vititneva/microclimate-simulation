@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from sklearn.metrics import r2_score
 import json
 import os
+from plotly.subplots import make_subplots
 
 # Get the absolute path to the config folder based on the current script directory
 config_dir = os.path.join(os.path.dirname(__file__), 'config')
@@ -106,17 +107,15 @@ app.layout = html.Div([
     ], style={'display': 'flex', 'flex-direction': 'row'}),  # Flexbox for layout
 
     # Row for heatmaps (moved down)
+    # Row for heatmaps
     html.Div([
-        dcc.Graph(id='statusquo-graph', style={'flex': 1}),
-        dcc.Graph(id='optimized-graph', style={'flex': 1}),
-        dcc.Graph(id='difference-graph', style={'flex': 1})
-    ], style={'display': 'flex', 'flex-direction': 'row', 'height': '55vh'})
+        dcc.Graph(id='heatmap-graphs', style={'width': '100%', 'height': '55vh'})
+    ])
+
 ])
 
 @app.callback(
-    [Output('statusquo-graph', 'figure'),
-     Output('optimized-graph', 'figure'),
-     Output('difference-graph', 'figure'),
+    [Output('heatmap-graphs', 'figure'),
      Output('hourly-plot', 'figure'),
      Output('vertical-level-dropdown', 'style'),
      Output('kpi-description', 'children')],
@@ -126,7 +125,6 @@ app.layout = html.Div([
 )
 def update_graphs(selected_kpi, selected_time, selected_level):
     global_min, global_max = get_global_range(selected_kpi)
-
     # Initialize the dropdown_style as hidden (default)
     dropdown_style = {'display': 'none'}
 
@@ -180,27 +178,121 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     # Define a fixed size for the heatmaps
     heatmap_size = 500  # Square size for height and width
 
-    # Heatmap plots for status quo, optimized, and difference
-    statusquo_fig = px.imshow(
-        statusquo_data, color_continuous_scale=color_scale,
-        title=f"Status Quo: {selected_kpi} (Time: {selected_time})",
-        zmin=global_min, zmax=global_max, width=heatmap_size, height=heatmap_size,
-        labels={"color": f"{selected_kpi} Value"}
+    # Create the subplots figure
+    fig = make_subplots(
+        rows=1, cols=3,
+        subplot_titles=(
+            f"Status Quo: {selected_kpi} (Time: {selected_time})",
+            f"Optimized: {selected_kpi} (Time: {selected_time})",
+            f"Difference (Status Quo - Optimized): {selected_kpi} (Time: {selected_time}) R² = {r2:.2f}"
+        ),
+        shared_xaxes=True,
+        shared_yaxes=True,
+        horizontal_spacing=0.02
     )
 
-    optimized_fig = px.imshow(
-        optimized_data, color_continuous_scale=color_scale,
-        title=f"Optimized: {selected_kpi} (Time: {selected_time})",
-        zmin=global_min, zmax=global_max, width=heatmap_size, height=heatmap_size,
-        labels={"color": f"{selected_kpi} Value"}
+    # Prepare data
+    x = np.arange(statusquo_data.shape[1])
+    y = np.arange(statusquo_data.shape[0])
+
+    # Common colorbar properties
+    colorbar_common = dict(
+        thickness=15,
+        len=1.0,
+        y=0.5,
+        yanchor='middle',
+        ticks='outside',
+        ticklen=3
     )
 
-    difference_fig = px.imshow(
-        difference_data, color_continuous_scale=color_scale,
-        title=f"Difference (Status Quo - Optimized): {selected_kpi} (Time: {selected_time}) R² = {r2:.2f}",
-        zmin=-abs(global_max - global_min), zmax=abs(global_max - global_min),
-        width=heatmap_size, height=heatmap_size, labels={"color": "Difference"}
+    # Add Status Quo heatmap
+    fig.add_trace(
+        go.Heatmap(
+            z=statusquo_data,
+            x=x,
+            y=y,
+            colorscale=color_scale,
+            zmin=global_min,
+            zmax=global_max,
+            colorbar=dict(
+                title=f"{selected_kpi} Value",
+                x=0.28  # Position colorbar inside the subplot
+            ) | colorbar_common,
+            showscale=True
+        ),
+        row=1, col=1
     )
+
+    # Add Optimized heatmap
+    fig.add_trace(
+        go.Heatmap(
+            z=optimized_data,
+            x=x,
+            y=y,
+            colorscale=color_scale,
+            zmin=global_min,
+            zmax=global_max,
+            colorbar=dict(
+                title=f"{selected_kpi} Value",
+                x=0.62
+            ) | colorbar_common,
+            showscale=True
+        ),
+        row=1, col=2
+    )
+
+    # Add Difference heatmap
+    fig.add_trace(
+        go.Heatmap(
+            z=difference_data,
+            x=x,
+            y=y,
+            colorscale=color_scale,
+            zmin=-abs(global_max - global_min),
+            zmax=abs(global_max - global_min),
+            colorbar=dict(
+                title="Difference",
+                x=0.96
+            ) | colorbar_common,
+            showscale=True
+        ),
+        row=1, col=3
+    )
+
+    # Update the layout
+    fig.update_layout(
+        height=500,
+        width=1500,
+        margin=dict(l=50, r=50, t=100, b=50),
+        # Uniform font size for titles
+        font=dict(size=12),
+        # Adjust subplot titles
+        annotations=[
+            dict(
+                text=title['text'],
+                x=title['x'],
+                y=1.0,
+                xref='paper',
+                yref='paper',
+                showarrow=False,
+                font=dict(size=14),
+                xanchor='center'
+            ) for title in fig.layout.annotations
+        ]
+    )
+
+    # Update axes to have the same scale and hide tick labels
+    fig.update_xaxes(
+        showticklabels=False,
+        scaleanchor='y',
+        scaleratio=1,
+        constrain='domain'
+    )
+    fig.update_yaxes(
+        showticklabels=False,
+        constrain='domain'
+    )
+
 
     # Generate the hourly plot (mean, min, max) for all KPIs
     time_hours = [str(t)[11:13] for t in ds_statusquo['Time'].values]  # Extract hour for x-axis
@@ -262,7 +354,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     # Set KPI description
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
-    return (statusquo_fig, optimized_fig, difference_fig, hourly_fig, dropdown_style, description)
+    return (fig, hourly_fig, dropdown_style, description)
 
 
 if __name__ == '__main__':
