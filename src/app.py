@@ -100,19 +100,23 @@ app.layout = html.Div([
             html.P(id='kpi-description', style={'white-space': 'pre-wrap'})
         ], style={'width': '33%', 'margin-left': '10px'}),  # 1/3 width for description
 
-        # Hourly plot placed in the top-right corner with reduced height
+        # Hourly plot placed in the top-right corner
         html.Div([
-            dcc.Graph(id='hourly-plot', style={'width': '100%', 'height': '250px'})  # Adjusted height here
+            dcc.Graph(id='hourly-plot', style={'width': '100%', 'height': '225px'})
         ], style={'width': '33%', 'margin-left': '10px'})  # 1/3 width for hourly plot
     ], style={'display': 'flex', 'flex-direction': 'row'}),  # Flexbox for layout
 
-    # Row for heatmaps (moved down)
     # Row for heatmaps
     html.Div([
-        dcc.Graph(id='heatmap-graphs', style={'width': '100%', 'height': '55vh'})
-    ])
+    dcc.Graph(
+        id='heatmap-graphs',
+        style={'width': '100%', 'height': '55vh', 'padding': '0', 'margin': '0'},
+        config={'responsive': True}
+    )
+    ], style={'padding': '0', 'margin': '0'})
 
 ])
+
 
 @app.callback(
     [Output('heatmap-graphs', 'figure'),
@@ -175,9 +179,6 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     difference_data = statusquo_data - optimized_data
     color_scale = 'RdBu_r'
 
-    # Define a fixed size for the heatmaps
-    heatmap_size = 500  # Square size for height and width
-
     # Create the subplots figure
     fig = make_subplots(
         rows=1, cols=3,
@@ -188,7 +189,8 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         ),
         shared_xaxes=True,
         shared_yaxes=True,
-        horizontal_spacing=0.02
+        horizontal_spacing=0.05,
+        column_widths=[0.3333, 0.3333, 0.3334]  # Equal widths
     )
 
     # Prepare data
@@ -198,12 +200,14 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     # Common colorbar properties
     colorbar_common = dict(
         thickness=15,
-        len=1.0,
-        y=0.5,
-        yanchor='middle',
+        len=0.75,        # Length of the colorbar (adjust as needed)
+        y=1.0,          # Position at the top
+        yanchor='top',  # Anchor the colorbar's top to y
         ticks='outside',
-        ticklen=3
+        ticklen=3,
+        tickfont=dict(size=10)
     )
+
 
     # Add Status Quo heatmap
     fig.add_trace(
@@ -215,8 +219,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
             zmin=global_min,
             zmax=global_max,
             colorbar=dict(
-                title=f"{selected_kpi} Value",
-                x=0.28  # Position colorbar inside the subplot
+                title=f"{selected_kpi} Value"
             ) | colorbar_common,
             showscale=True
         ),
@@ -233,8 +236,7 @@ def update_graphs(selected_kpi, selected_time, selected_level):
             zmin=global_min,
             zmax=global_max,
             colorbar=dict(
-                title=f"{selected_kpi} Value",
-                x=0.62
+                title=f"{selected_kpi} Value"
             ) | colorbar_common,
             showscale=True
         ),
@@ -251,45 +253,61 @@ def update_graphs(selected_kpi, selected_time, selected_level):
             zmin=-abs(global_max - global_min),
             zmax=abs(global_max - global_min),
             colorbar=dict(
-                title="Difference",
-                x=0.96
+                title="Difference"
             ) | colorbar_common,
             showscale=True
         ),
         row=1, col=3
     )
 
+    # Retrieve x-axis domains
+    x_domain1 = fig.layout.xaxis.domain
+    x_domain2 = fig.layout.xaxis2.domain
+    x_domain3 = fig.layout.xaxis3.domain
+
+    # Define a small offset for colorbars
+    colorbar_offset = -0.01  # Adjust as needed
+
+    # Set colorbar positions
+    fig.data[0].colorbar.x = x_domain1[1] + colorbar_offset
+    fig.data[1].colorbar.x = x_domain2[1] + colorbar_offset
+    fig.data[2].colorbar.x = x_domain3[1] + colorbar_offset
+
+    # Adjust subplot titles
+    fig.layout.annotations = [
+        dict(
+            text=title['text'],
+            x=(domain[0] + domain[1]) / 2,
+            y=1.05,
+            xref='paper',
+            yref='paper',
+            showarrow=False,
+            font=dict(size=14),
+            xanchor='center',
+            yanchor='top'
+        )
+        for title, domain in zip(
+            fig.layout.annotations,
+            [x_domain1, x_domain2, x_domain3]
+        )
+    ]
+
     # Update the layout
     fig.update_layout(
-        height=500,
-        width=1500,
-        margin=dict(l=50, r=50, t=100, b=50),
-        # Uniform font size for titles
-        font=dict(size=12),
-        # Adjust subplot titles
-        annotations=[
-            dict(
-                text=title['text'],
-                x=title['x'],
-                y=1.0,
-                xref='paper',
-                yref='paper',
-                showarrow=False,
-                font=dict(size=14),
-                xanchor='center'
-            ) for title in fig.layout.annotations
-        ]
+        autosize=True,
+        margin=dict(l=25, r=25, t=50, b=25),
+        font=dict(size=12)
     )
 
-    # Update axes to have the same scale and hide tick labels
+    # Update axes
     fig.update_xaxes(
-        showticklabels=False,
+        showticklabels=True,
         scaleanchor='y',
         scaleratio=1,
         constrain='domain'
     )
     fig.update_yaxes(
-        showticklabels=False,
+        showticklabels=True,
         constrain='domain'
     )
 

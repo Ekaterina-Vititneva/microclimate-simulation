@@ -14,3 +14,13 @@ h1,
 h5 {
   font-family: "Roboto", sans-serif;
 }
+
+/* In your custom.css file html,
+.app-container, body,*/
+
+.row,
+.column,
+.container {
+  margin: 0;
+  padding: 0;
+}
