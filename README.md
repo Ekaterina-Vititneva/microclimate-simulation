@@ -23,20 +23,19 @@ scenarios including some short information about what and why it is shown.
 - The output data of both simulation runs
   - netCDF file format
 
+## Demo
+
+[Microclimate Simulation Dashboard](https://microclimate-simulation.onrender.com/)
 ![Dashboard](assets/dashboard.png)
 
 ## Details
 
 - [More info about the example](https://envi-met.info/doku.php?id=examples:playground)
 - [KPIs description](https://envi-met.info/doku.php?id=filereference:output:atmosphere)
-- [ENVI-met Model Architecture] (https://envi-met.info/doku.php?id=intro:modelconept)
+- [ENVI-met Model Architecture](https://envi-met.info/doku.php?id=intro:modelconept)
 - [File extensions](data/file_extensions.md)
 
 ![The Playground model](https://envi-met.info/lib/exe/fetch.php?w=800&tok=812d4d&media=examples:2024-09-13_21h01_27.png)
-
-## Demo
-
-[Microclimate Simulation Dashboard](https://microclimate-simulation.onrender.com/)
 
 ## Set up
 
