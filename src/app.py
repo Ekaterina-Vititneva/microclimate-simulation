@@ -141,9 +141,6 @@ app.layout = dbc.Container([
 )
 def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     # Map the toggle value to the Plotly template name
-    #template = "darkly" if toggle else "bootstrap"
-    
-    # Corrected mapping
     template = "bootstrap" if toggle else "darkly"
 
     # Access the colors from the selected template
