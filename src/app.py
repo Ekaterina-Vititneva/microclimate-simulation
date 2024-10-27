@@ -1,6 +1,5 @@
 import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash import dcc, html, Input, Output
 import xarray as xr
 import pandas as pd
 import numpy as np
@@ -10,6 +9,12 @@ from sklearn.metrics import r2_score
 import json
 import os
 from plotly.subplots import make_subplots
+import plotly.io as pio  # Import plotly.io to access templates
+import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import ThemeSwitchAIO, load_figure_template
+
+# Load the figure templates for the themes
+load_figure_template(["bootstrap", "darkly"])
 
 # Get the absolute path to the config folder based on the current script directory
 config_dir = os.path.join(os.path.dirname(__file__), 'config')
@@ -18,18 +23,12 @@ json_config_path = os.path.join(config_dir, 'kpi_config.json')
 with open(json_config_path, 'r') as f:
     kpi_config = json.load(f)
 
-# Get the project root directory (one level up from src)
-#base_dir = os.path.dirname(os.getcwd())
-
 # Get one level up from the current directory
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Access the options and descriptions
 kpi_options = kpi_config['kpi_options']
 kpi_descriptions = kpi_config['kpi_descriptions']
-
-#print("Current working directory:", os.getcwd())
-#print("Files in current directory:", os.listdir())
 
 # Paths to the datasets
 statusquo_file_path = os.path.join(base_dir, 'data', 'statusquo', 'Playground_2024-07-06_04.00.00_light.nc')
@@ -43,10 +42,8 @@ ds_optimized = xr.open_dataset(optimized_file_path)
 time_steps = ds_statusquo['Time'].values
 vertical_levels = list(ds_statusquo['GridsK'].values)
 
-# Heatmap size control
-heatmap_size = 500  # Variable to control heatmap size (height and width)
-
-app = dash.Dash(__name__, external_stylesheets=['/assets/custom.css'])
+# Initialize the Dash app with Bootstrap themes
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.themes.DARKLY])
 
 # Expose the underlying Flask server instance for Gunicorn
 server = app.server
@@ -61,20 +58,32 @@ def get_global_range(kpi):
     global_max = max(statusquo_max, optimized_max)
     return global_min, global_max
 
-app.layout = html.Div([
-    html.H1("Microclimate Simulation Dashboard - ENVI-met Playground Project"),
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col(
+            html.H1("Microclimate Simulation Dashboard - ENVI-met Playground Project"),
+            width=True
+        ),
+        dbc.Col(
+            ThemeSwitchAIO(aio_id="theme", themes=[dbc.themes.BOOTSTRAP, dbc.themes.DARKLY]),
+            width='auto',
+            style={'text-align': 'right'}
+        ),
+    ], align='center', className='my-2', justify='between'),
 
     # Row with dropdowns, slider, KPI description, and hourly plot
-    html.Div([
+    dbc.Row([
         # Controls (dropdowns and slider)
-        html.Div([
-            html.Label("Select a KPI to compare:"),
-            dcc.Dropdown(
+        dbc.Col([
+            dbc.Label("Select a KPI to compare:"),
+            dbc.Select(
                 id='kpi-dropdown',
-                options=[{'label': kpi, 'value': kpi} for kpi in kpi_options],
-                value=kpi_options[0],  # Default value
-                clearable=False
+                options=[
+                    {'label': kpi, 'value': kpi} for kpi in kpi_options
+                ],
+                value=kpi_options[0]  # Default value
             ),
+
             html.Label("Select Time Step:"),
             dcc.Slider(
                 id='time-slider',
@@ -84,39 +93,41 @@ app.layout = html.Div([
                 marks={i: str(i) for i in range(len(time_steps))},
                 step=1
             ),
-            html.Label("Select Vertical Level (GridsK):"),
-            dcc.Dropdown(
+            dbc.Label("Select Vertical Level (GridsK):", id='vertical-level-label', style={'display': 'none'}),
+            dbc.Select(
                 id='vertical-level-dropdown',
-                options=[{'label': f'Level {int(level)}', 'value': level} for level in vertical_levels],
+                options=[
+                    {'label': f'Level {int(level)}', 'value': level} for level in vertical_levels
+                ],
                 value=vertical_levels[0],  # Default level
-                clearable=False,
                 style={'display': 'none'}
             ),
-        ], style={'width': '33%'}),  # 1/3 width for controls
+
+        ], width=4),
 
         # Description area
-        html.Div([
+        dbc.Col([
             html.H3("KPI Description"),
             html.P(id='kpi-description', style={'white-space': 'pre-wrap'})
-        ], style={'width': '33%', 'margin-left': '10px'}),  # 1/3 width for description
+        ], width=4),
 
-        # Hourly plot placed in the top-right corner
-        html.Div([
+        # Hourly plot
+        dbc.Col([
             dcc.Graph(id='hourly-plot', style={'width': '100%', 'height': '225px'})
-        ], style={'width': '33%', 'margin-left': '10px'})  # 1/3 width for hourly plot
-    ], style={'display': 'flex', 'flex-direction': 'row'}),  # Flexbox for layout
+        ], width=4)
+    ], className='my-2'),
 
     # Row for heatmaps
-    html.Div([
-    dcc.Graph(
-        id='heatmap-graphs',
-        style={'width': '100%', 'height': '55vh', 'padding': '0', 'margin': '0'},
-        config={'responsive': True}
-    )
-    ], style={'padding': '0', 'margin': '0'})
-
-])
-
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(
+                id='heatmap-graphs',
+                style={'width': '100%', 'height': '55vh', 'padding': '0', 'margin': '0'},
+                config={'responsive': True}
+            )
+        ], width=12)
+    ], className='my-2')
+], fluid=True)
 
 @app.callback(
     [Output('heatmap-graphs', 'figure'),
@@ -125,9 +136,20 @@ app.layout = html.Div([
      Output('kpi-description', 'children')],
     [Input('kpi-dropdown', 'value'),
      Input('time-slider', 'value'),
-     Input('vertical-level-dropdown', 'value')]
+     Input('vertical-level-dropdown', 'value'),
+     Input(ThemeSwitchAIO.ids.switch('theme'), 'value')]
 )
-def update_graphs(selected_kpi, selected_time, selected_level):
+def update_graphs(selected_kpi, selected_time, selected_level, toggle):
+    # Map the toggle value to the Plotly template name
+    #template = "darkly" if toggle else "bootstrap"
+    
+    # Corrected mapping
+    template = "bootstrap" if toggle else "darkly"
+
+    # Access the colors from the selected template
+    template_layout = pio.templates[template].layout
+    colorway = template_layout.colorway
+
     global_min, global_max = get_global_range(selected_kpi)
     # Initialize the dropdown_style as hidden (default)
     dropdown_style = {'display': 'none'}
@@ -207,7 +229,6 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         ticklen=3,
         tickfont=dict(size=10)
     )
-
 
     # Add Status Quo heatmap
     fig.add_trace(
@@ -292,13 +313,14 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         )
     ]
 
-    # Update the layout
+    # Update the layout (remove explicit background color settings)
     fig.update_layout(
+        template=template,
         autosize=True,
         margin=dict(l=25, r=25, t=50, b=25),
         font=dict(size=12),
-        plot_bgcolor='white',  # Set the background of the plot area to white
-        paper_bgcolor='white'  # Set the background outside the plot area to white
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
+        #plot_bgcolor='rgba(0,0,0,0)'    # Transparent background
     )
 
     # Update axes
@@ -313,9 +335,16 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         constrain='domain'
     )
 
-
     # Generate the hourly plot (mean, min, max) for all KPIs
     time_hours = [str(t)[11:13] for t in ds_statusquo['Time'].values]  # Extract hour for x-axis
+
+    # Get colors from the template's colorway
+    statusquo_color = colorway[0]
+    optimized_color = colorway[1]
+
+    # Adjust fill colors for shaded areas (semi-transparent versions of the line colors)
+    statusquo_fillcolor = f'rgba({int(statusquo_color[1:3], 16)}, {int(statusquo_color[3:5], 16)}, {int(statusquo_color[5:7], 16)}, 0.2)'
+    optimized_fillcolor = f'rgba({int(optimized_color[1:3], 16)}, {int(optimized_color[3:5], 16)}, {int(optimized_color[5:7], 16)}, 0.2)'
 
     # Create the hourly plot with mean, min-max range
     hourly_fig = go.Figure()
@@ -328,14 +357,14 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     ))
     hourly_fig.add_trace(go.Scatter(
         x=time_hours, y=statusquo_hourly_min,
-        mode='lines', fill='tonexty', fillcolor='rgba(0, 100, 250, 0.2)',
-        line=dict(width=0), name='Min-Max Range Status Quo', hoverinfo='skip'
+        mode='lines', fill='tonexty', fillcolor=statusquo_fillcolor,
+        line=dict(width=0), name='Min-Max Range Status Quo', hoverinfo='skip', showlegend=True
     ))
 
     # Mean line for status quo
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_mean, mode='lines+markers', line=dict(color='blue', width=2),
-        name='Mean Status Quo', hoverinfo='x+y'
+        x=time_hours, y=statusquo_hourly_mean, mode='lines+markers', line=dict(color=statusquo_color, width=2),
+        name='Mean Status Quo', hoverinfo='x+y', showlegend=True
     ))
 
     # Min-max range shaded area for optimized
@@ -346,17 +375,18 @@ def update_graphs(selected_kpi, selected_time, selected_level):
     ))
     hourly_fig.add_trace(go.Scatter(
         x=time_hours, y=optimized_hourly_min,
-        mode='lines', fill='tonexty', fillcolor='rgba(250, 100, 0, 0.2)',
-        line=dict(width=0), name='Min-Max Range Optimized', hoverinfo='skip'
+        mode='lines', fill='tonexty', fillcolor=optimized_fillcolor,
+        line=dict(width=0), name='Min-Max Range Optimized', hoverinfo='skip', showlegend=True
     ))
 
     # Mean line for optimized
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_mean, mode='lines+markers', line=dict(color='red', width=2),
+        x=time_hours, y=optimized_hourly_mean, mode='lines+markers', line=dict(color=optimized_color, width=2),
         name='Mean Optimized', hoverinfo='x+y'
     ))
 
     hourly_fig.update_layout(
+        template=template,
         title=f'Mean {selected_kpi} with Min-Max Range (Status Quo vs Optimized)',
         xaxis_title='Hour of the Day',
         yaxis_title=f'{selected_kpi} Value',
@@ -368,14 +398,15 @@ def update_graphs(selected_kpi, selected_time, selected_level):
         font=dict(size=10),
         xaxis=dict(title='Hour of the Day', side='top', title_font=dict(size=12), tickfont=dict(size=9)),
         yaxis=dict(title_font=dict(size=12), tickfont=dict(size=9)),
-        margin=dict(t=100, b=0)
+        margin=dict(t=100, b=0),
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
+        plot_bgcolor='rgba(0,0,0,0)'    # Transparent background
     )
 
     # Set KPI description
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
     return (fig, hourly_fig, dropdown_style, description)
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
