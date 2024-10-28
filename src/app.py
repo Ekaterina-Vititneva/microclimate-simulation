@@ -131,8 +131,9 @@ app.layout = dbc.Container([
 @app.callback(
     [Output('heatmap-graphs', 'figure'),
      Output('hourly-plot', 'figure'),
-     Output('vertical-level-dropdown', 'className'),  # Update className for theme styling
-     Output('vertical-level-dropdown', 'style'),      # Update display for visibility
+     Output('vertical-level-dropdown', 'className'),  # Class for vertical level dropdown
+     Output('kpi-dropdown', 'className'),             # Class for KPI dropdown
+     Output('vertical-level-dropdown', 'style'),      # Style for visibility
      Output('kpi-description', 'children')],
     [Input('kpi-dropdown', 'value'),
      Input('time-slider', 'value'),
@@ -153,10 +154,10 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     is_dark_mode = not toggle  # toggle is False in dark mode
     
     dropdown_class = 'dark-dropdown' if not toggle else 'light-dropdown'  # Dark mode when toggle is False
+    kpi_dropdown_class = 'dark-dropdown' if not toggle else 'light-dropdown'
 
-    # Set visibility based on KPI selection
+    # Set visibility for the vertical level dropdown based on KPI selection
     dropdown_style = {'display': 'block'} if 'GridsK' in ds_statusquo[selected_kpi].dims else {'display': 'none'}
-    
     
     # Initialize the dropdown_style as hidden (default)
     #dropdown_style = {'display': 'none'}
@@ -433,7 +434,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     # Set KPI description
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
-    return fig, hourly_fig, dropdown_class, dropdown_style, description
+    return fig, hourly_fig, dropdown_class, kpi_dropdown_class, dropdown_style, description
 
 if __name__ == '__main__':
     app.run_server(debug=True)
