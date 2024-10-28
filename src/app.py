@@ -1,54 +1,44 @@
 import dash
 from dash import dcc, html, Input, Output
 import xarray as xr
-import pandas as pd
 import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.metrics import r2_score
 import json
 import os
 from plotly.subplots import make_subplots
-import plotly.io as pio  # Import plotly.io to access templates
+import plotly.io as pio
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import ThemeSwitchAIO, load_figure_template
 
 # Load the figure templates for the themes
 load_figure_template(["bootstrap", "darkly"])
 
-# Get the absolute path to the config folder based on the current script directory
+# Load KPI configurations
 config_dir = os.path.join(os.path.dirname(__file__), 'config')
 json_config_path = os.path.join(config_dir, 'kpi_config.json')
-
 with open(json_config_path, 'r') as f:
     kpi_config = json.load(f)
 
-# Get one level up from the current directory
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Access the options and descriptions
 kpi_options = kpi_config['kpi_options']
 kpi_descriptions = kpi_config['kpi_descriptions']
 
-# Paths to the datasets
+# Paths to datasets
 statusquo_file_path = os.path.join(base_dir, 'data', 'statusquo', 'Playground_2024-07-06_04.00.00_light.nc')
 optimized_file_path = os.path.join(base_dir, 'data', 'opti', 'Playground_2024-07-06_04.00.00_light.nc')
 
-# Load the datasets
+# Load datasets
 ds_statusquo = xr.open_dataset(statusquo_file_path)
 ds_optimized = xr.open_dataset(optimized_file_path)
-
-# Get the time dimension and vertical levels
 time_steps = ds_statusquo['Time'].values
 vertical_levels = list(ds_statusquo['GridsK'].values)
 
-# Initialize the Dash app with Bootstrap themes
+# Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.themes.DARKLY])
-
-# Expose the underlying Flask server instance for Gunicorn
 server = app.server
 
-# Function to calculate global min and max for a KPI across all times and heights
+# Function to calculate global min and max
 def get_global_range(kpi):
     statusquo_min = float(ds_statusquo[kpi].min().values)
     statusquo_max = float(ds_statusquo[kpi].max().values)
@@ -61,7 +51,10 @@ def get_global_range(kpi):
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col(
-            html.H1("Microclimate Simulation Dashboard - ENVI-met Playground Project"),
+            html.H1(
+                "Microclimate Simulation Dashboard - ENVI-met Playground Project",
+                style={'font-size': '2.5rem', 'font-family': 'Roboto, sans-serif'}
+            ),
             width=True
         ),
         dbc.Col(
@@ -84,7 +77,7 @@ app.layout = dbc.Container([
                 value=kpi_options[0]  # Default value
             ),
 
-            html.Label("Select Time Step:"),
+            dbc.Label("Select Time Step:"),
             dcc.Slider(
                 id='time-slider',
                 min=0,
@@ -107,8 +100,14 @@ app.layout = dbc.Container([
 
         # Description area
         dbc.Col([
-            html.H3("KPI Description"),
-            html.P(id='kpi-description', style={'white-space': 'pre-wrap'})
+            html.H3(
+                "KPI Description",
+                style={'font-size': '1.5rem', 'font-family': 'Roboto, sans-serif', 'font-weight': 'bold'}
+            ),
+            html.P(
+                id='kpi-description',
+                style={'white-space': 'pre-wrap', 'font-family': 'Roboto, sans-serif', 'font-size': '1rem'}
+            )
         ], width=4),
 
         # Hourly plot
@@ -224,7 +223,8 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         yanchor='top',  # Anchor the colorbar's top to y
         ticks='outside',
         ticklen=3,
-        tickfont=dict(size=10)
+        tickfont=dict(family='Roboto, sans-serif', size=10),
+        title_font=dict(family='Roboto, sans-serif', size=12)
     )
 
     # Add Status Quo heatmap
@@ -300,7 +300,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
             xref='paper',
             yref='paper',
             showarrow=False,
-            font=dict(size=14),
+            font=dict(family='Roboto, sans-serif', size=14),
             xanchor='center',
             yanchor='top'
         )
@@ -310,14 +310,13 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         )
     ]
 
-    # Update the layout (remove explicit background color settings)
+    # Update the layout
     fig.update_layout(
         template=template,
         autosize=True,
         margin=dict(l=25, r=25, t=50, b=25),
-        font=dict(size=12),
+        font=dict(family='Roboto, sans-serif', size=12),
         paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
-        #plot_bgcolor='rgba(0,0,0,0)'    # Transparent background
     )
 
     # Update axes
@@ -325,11 +324,15 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         showticklabels=True,
         scaleanchor='y',
         scaleratio=1,
-        constrain='domain'
+        constrain='domain',
+        tickfont=dict(family='Roboto, sans-serif', size=10),
+        title_font=dict(family='Roboto, sans-serif', size=12)
     )
     fig.update_yaxes(
         showticklabels=True,
-        constrain='domain'
+        constrain='domain',
+        tickfont=dict(family='Roboto, sans-serif', size=10),
+        title_font=dict(family='Roboto, sans-serif', size=12)
     )
 
     # Generate the hourly plot (mean, min, max) for all KPIs
@@ -360,7 +363,8 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
 
     # Mean line for status quo
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=statusquo_hourly_mean, mode='lines+markers', line=dict(color=statusquo_color, width=2),
+        x=time_hours, y=statusquo_hourly_mean, mode='lines+markers',
+        line=dict(color=statusquo_color, width=2),
         name='Mean Status Quo', hoverinfo='x+y', showlegend=True
     ))
 
@@ -378,7 +382,8 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
 
     # Mean line for optimized
     hourly_fig.add_trace(go.Scatter(
-        x=time_hours, y=optimized_hourly_mean, mode='lines+markers', line=dict(color=optimized_color, width=2),
+        x=time_hours, y=optimized_hourly_mean, mode='lines+markers',
+        line=dict(color=optimized_color, width=2),
         name='Mean Optimized', hoverinfo='x+y'
     ))
 
@@ -389,12 +394,19 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         yaxis_title=f'{selected_kpi} Value',
         height=250,
         legend=dict(
-            font=dict(size=10), orientation='h', yanchor='top',
+            font=dict(family='Roboto, sans-serif', size=10), orientation='h', yanchor='top',
             y=-0.4, xanchor='center', x=0.5
         ),
-        font=dict(size=10),
-        xaxis=dict(title='Hour of the Day', side='top', title_font=dict(size=12), tickfont=dict(size=9)),
-        yaxis=dict(title_font=dict(size=12), tickfont=dict(size=9)),
+        font=dict(family='Roboto, sans-serif', size=10),
+        xaxis=dict(
+            title='Hour of the Day', side='top',
+            title_font=dict(family='Roboto, sans-serif', size=12),
+            tickfont=dict(family='Roboto, sans-serif', size=9)
+        ),
+        yaxis=dict(
+            title_font=dict(family='Roboto, sans-serif', size=12),
+            tickfont=dict(family='Roboto, sans-serif', size=9)
+        ),
         margin=dict(t=100, b=0),
         paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
         plot_bgcolor='rgba(0,0,0,0)'    # Transparent background
