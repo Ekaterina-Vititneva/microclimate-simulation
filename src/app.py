@@ -131,7 +131,8 @@ app.layout = dbc.Container([
 @app.callback(
     [Output('heatmap-graphs', 'figure'),
      Output('hourly-plot', 'figure'),
-     Output('vertical-level-dropdown', 'style'),
+     Output('vertical-level-dropdown', 'className'),  # Update className for theme styling
+     Output('vertical-level-dropdown', 'style'),      # Update display for visibility
      Output('kpi-description', 'children')],
     [Input('kpi-dropdown', 'value'),
      Input('time-slider', 'value'),
@@ -147,8 +148,23 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     colorway = template_layout.colorway
 
     global_min, global_max = get_global_range(selected_kpi)
+    
+    # Determine if dark mode is active
+    is_dark_mode = not toggle  # toggle is False in dark mode
+    
+    dropdown_class = 'dark-dropdown' if not toggle else 'light-dropdown'  # Dark mode when toggle is False
+
+    # Set visibility based on KPI selection
+    dropdown_style = {'display': 'block'} if 'GridsK' in ds_statusquo[selected_kpi].dims else {'display': 'none'}
+    
+    
     # Initialize the dropdown_style as hidden (default)
-    dropdown_style = {'display': 'none'}
+    #dropdown_style = {'display': 'none'}
+    # Set dropdown background color based on the theme
+    #dropdown_style = {
+     #   'backgroundColor': 'rgba(30, 30, 30, 0.9)' if is_dark_mode else 'white',
+     #   'color': 'white' if is_dark_mode else 'black'
+    #}
 
     # Function to compute mean, min, and max for hourly plot dynamically
     def compute_hourly_stats(ds, kpi, has_grids_k):
@@ -208,7 +224,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         shared_xaxes=True,
         shared_yaxes=True,
         horizontal_spacing=0.05,
-        column_widths=[0.3333, 0.3333, 0.3334]  # Equal widths
+        column_widths=[0.3333, 0.3333, 0.3334]
     )
 
     # Prepare data
@@ -218,9 +234,9 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     # Common colorbar properties
     colorbar_common = dict(
         thickness=15,
-        len=0.75,        # Length of the colorbar (adjust as needed)
-        y=1.0,          # Position at the top
-        yanchor='top',  # Anchor the colorbar's top to y
+        len=0.75,
+        y=1.0,
+        yanchor='top',
         ticks='outside',
         ticklen=3,
         tickfont=dict(family='Roboto, sans-serif', size=10),
@@ -236,6 +252,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
             colorscale=color_scale,
             zmin=global_min,
             zmax=global_max,
+            #opacity=0.95,
             colorbar=dict(
                 title=f"{selected_kpi} Value"
             ) | colorbar_common,
@@ -243,6 +260,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         ),
         row=1, col=1
     )
+
 
     # Add Optimized heatmap
     fig.add_trace(
@@ -284,7 +302,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     x_domain3 = fig.layout.xaxis3.domain
 
     # Define a small offset for colorbars
-    colorbar_offset = -0.01  # Adjust as needed
+    colorbar_offset = -0.01
 
     # Set colorbar positions
     fig.data[0].colorbar.x = x_domain1[1] + colorbar_offset
@@ -316,7 +334,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
         autosize=True,
         margin=dict(l=25, r=25, t=50, b=25),
         font=dict(family='Roboto, sans-serif', size=12),
-        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
+        paper_bgcolor='rgba(0,0,0,0)',
     )
 
     # Update axes
@@ -358,7 +376,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     hourly_fig.add_trace(go.Scatter(
         x=time_hours, y=statusquo_hourly_min,
         mode='lines', fill='tonexty', fillcolor=statusquo_fillcolor,
-        line=dict(width=0), name='Min-Max Range Status Quo', hoverinfo='skip', showlegend=True
+        line=dict(width=0), name='Range Status Quo', hoverinfo='skip', showlegend=True
     ))
 
     # Mean line for status quo
@@ -377,7 +395,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     hourly_fig.add_trace(go.Scatter(
         x=time_hours, y=optimized_hourly_min,
         mode='lines', fill='tonexty', fillcolor=optimized_fillcolor,
-        line=dict(width=0), name='Min-Max Range Optimized', hoverinfo='skip', showlegend=True
+        line=dict(width=0), name='Range Optimized', hoverinfo='skip', showlegend=True
     ))
 
     # Mean line for optimized
@@ -408,14 +426,14 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
             tickfont=dict(family='Roboto, sans-serif', size=9)
         ),
         margin=dict(t=100, b=0),
-        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
-        plot_bgcolor='rgba(0,0,0,0)'    # Transparent background
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)'
     )
 
     # Set KPI description
     description = kpi_descriptions.get(selected_kpi, "No description available.")
 
-    return (fig, hourly_fig, dropdown_style, description)
+    return fig, hourly_fig, dropdown_class, dropdown_style, description
 
 if __name__ == '__main__':
     app.run_server(debug=True)

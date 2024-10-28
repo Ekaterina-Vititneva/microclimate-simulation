@@ -15,9 +15,6 @@ h5 {
   font-family: "Roboto", sans-serif;
 }
 
-/* In your custom.css file html,
-.app-container, body,*/
-
 .row,
 .column,
 .container {
@@ -26,9 +23,19 @@ h5 {
 }
 
 h1 {
-  font-size: 2.5rem; /* Adjust as needed */
+  font-size: 2.5rem;
 }
 
 h5 {
-  font-size: 1.5rem; /* Adjust as needed */
+  font-size: 1.5rem;
+}
+
+.light-dropdown {
+  background-color: white;
+  color: black;
+}
+
+.dark-dropdown {
+  background-color: rgba(30, 30, 30, 0.9);
+  color: white;
 }
