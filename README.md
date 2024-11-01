@@ -4,16 +4,19 @@
 
 ## Goal
 
+Visualization of ENVI-met microclimate simulation data.
+
+This project is based on two simulation outputs from the ENVI-met microclimate
+model, each representing different scenarios. The first scenario illustrates the
+current or "status quo" conditions, while the second scenario (optimized) includes
+various mitigation measures aimed at optimizing thermal comfort in the area.
+
 The goal of this project is to develop Python scripts that generate clear, insightful visualizations
-of these data outputs. These visualizations should enable users to easily interpret
+of these data outputs. These visualizations enable users to easily interpret
 the results, compare the two scenarios, and gain a comprehensive understanding
 of how the mitigation measures affect thermal comfort.
 
-The final output should present the visualizations in a report-style format,
-ensuring that the graphics effectively communicate the differences between the
-scenarios including some short information about what and why it is shown.
-
-**The provided data contains:**
+**The input data contains:**
 
 - The input data of both simulation runs
   - model area (INX-File)
@@ -63,4 +66,12 @@ cd src
 
 ```
 python app.py
+```
+
+---
+
+To print the repositiry structure in terminal:
+
+```
+Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch "venv|__pycache__" } | Format-Table -Property FullName
 ```
