@@ -62,7 +62,7 @@ pip install -r requirements.txt
 cd src
 ```
 
-4. Naviagate to /src folder
+4. Run the app.py file
 
 ```
 python app.py
