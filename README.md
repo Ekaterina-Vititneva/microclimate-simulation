@@ -4,26 +4,20 @@
 
 ## Goal
 
-Visualization of ENVI-met microclimate simulation data.
+Visualization of ENVI-met microclimate simulation data on a dashboard.
 
-This project is based on two simulation outputs from the ENVI-met microclimate
-model, each representing different scenarios. The first scenario illustrates the
-current or "status quo" conditions, while the second scenario (optimized) includes
-various mitigation measures aimed at optimizing thermal comfort in the area.
+This project is based on two simulation outputs from the ENVI-met microclimate model, each representing different scenarios. The first scenario illustrates the current or "status quo" conditions, while the second ("optimized") scenario includes various mitigation measures aimed at enhancing thermal comfort in the area.
 
-The goal of this project is to develop Python scripts that generate clear, insightful visualizations
-of these data outputs. These visualizations enable users to easily interpret
-the results, compare the two scenarios, and gain a comprehensive understanding
-of how the mitigation measures affect thermal comfort.
+The primary goal is to develop Python scripts that generate clear, insightful visualizations of these outputs. These visualizations enable users to easily interpret results, compare scenarios, and gain a comprehensive understanding of how the mitigation measures impact thermal comfort.
 
-**The input data contains:**
+### **Input Data Overview:**
 
-- The input data of both simulation runs
-  - model area (INX-File)
-  - simulation config (SIMX-File)
-  - project information (INFOX-File and EDB-File)
-  - climate input data (FOX-File)
-- The output data of both simulation runs
+- Input data for both simulation runs:
+  - Model area (INX file)
+  - Simulation configuration (SIMX file)
+  - Project information (INFOX and EDB files)
+  - Climate input data (FOX file)
+- Output data for both simulation runs:
   - netCDF file format
 
 ## Demo
@@ -40,38 +34,40 @@ of how the mitigation measures affect thermal comfort.
 
 ![The Playground model](https://envi-met.info/lib/exe/fetch.php?w=800&tok=812d4d&media=examples:2024-09-13_21h01_27.png)
 
-## Set up
+## Setup
 
-### Running locally
+### Running Locally
 
-1. Activate the venv
+1. Activate the virtual environment:
 
-```
-.\venv\Scripts\activate
-```
+   ```
+   .\venv\Scripts\activate
+   ```
 
-2. Intall the dependencies
+2. Install the dependencies:
 
-```
-pip install -r requirements.txt
-```
+   ```
+   pip install -r requirements.txt
+   ```
 
-3. Naviagate to /src folder
+3. Navigate to the `/src` folder:
 
-```
-cd src
-```
+   ```
+   cd src
+   ```
 
-4. Run the app.py file
+4. Run the `app.py` file:
 
-```
-python app.py
-```
+   ```
+   python app.py
+   ```
 
 ---
 
-To print the repositiry structure in terminal:
+### Repository Structure
 
-```
+To display the repository structure in the terminal:
+
+```powershell
 Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch "venv|__pycache__" } | Format-Table -Property FullName
 ```
