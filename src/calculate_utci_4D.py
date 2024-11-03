@@ -1,6 +1,6 @@
 import xarray as xr
 import numpy as np
-from utci_calculator import extract_and_calculate_utci
+from utci_calculator_4D import extract_and_calculate_utci
 import os
 
 # Function to add UTCI to a dataset
