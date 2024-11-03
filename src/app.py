@@ -25,8 +25,8 @@ kpi_options = kpi_config['kpi_options']
 kpi_descriptions = kpi_config['kpi_descriptions']
 
 # Paths to datasets
-statusquo_file_path = os.path.join(base_dir, 'data', 'statusquo', 'Playground_2024-07-06_04.00.00_light.nc')
-optimized_file_path = os.path.join(base_dir, 'data', 'opti', 'Playground_2024-07-06_04.00.00_light.nc')
+statusquo_file_path = os.path.join(base_dir, 'data', 'statusquo', 'Playground_2024-07-06_04.00.00_light_updated.nc')
+optimized_file_path = os.path.join(base_dir, 'data', 'opti', 'Playground_2024-07-06_04.00.00_light_updated.nc')
 
 # Load datasets
 ds_statusquo = xr.open_dataset(statusquo_file_path)
