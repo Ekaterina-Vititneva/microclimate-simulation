@@ -53,14 +53,14 @@ app.layout = dbc.Container([
         dbc.Col(
             html.H1(
                 "Microclimate Simulation Dashboard - ENVI-met Playground Project",
-                style={'font-size': '2.5rem', 'font-family': 'Roboto, sans-serif'}
+                style={'fontSize': '2.5rem', 'fontFamily': 'Roboto, sans-serif'}
             ),
             width=True
         ),
         dbc.Col(
             ThemeSwitchAIO(aio_id="theme", themes=[dbc.themes.BOOTSTRAP, dbc.themes.DARKLY]),
             width='auto',
-            style={'text-align': 'right'}
+            style={'textAlign': 'right'}
         ),
     ], align='center', className='my-2', justify='between'),
 
@@ -102,11 +102,11 @@ app.layout = dbc.Container([
         dbc.Col([
             html.H3(
                 "KPI Description",
-                style={'font-size': '1.5rem', 'font-family': 'Roboto, sans-serif', 'font-weight': 'bold'}
+                style={'fontSize': '1.5rem', 'fontFamily': 'Roboto, sans-serif', 'fontWeight': 'bold'}
             ),
             html.P(
                 id='kpi-description',
-                style={'white-space': 'pre-wrap', 'font-family': 'Roboto, sans-serif', 'font-size': '1rem'}
+                style={'whiteSpace': 'pre-wrap', 'fontFamily': 'Roboto, sans-serif', 'fontSize': '1rem'}
             )
         ], width=4),
 
