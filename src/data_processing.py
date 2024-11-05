@@ -17,8 +17,17 @@ def extract_kpis_from_nc(input_path, output_path, kpi_variables):
         # Open the original .nc file
         ds = xr.open_dataset(input_path)
         
+        # Filter out KPIs that are not present in the dataset
+        available_kpi_variables = [kpi for kpi in kpi_variables if kpi in ds.variables]
+        print(f"KPIs to be extracted: {available_kpi_variables}")
+
+        # Check if any KPIs are left to process
+        if not available_kpi_variables:
+            print("No matching KPIs found in the dataset.")
+            return
+        
         # Extract only the desired KPIs
-        ds_light = ds[kpi_variables]
+        ds_light = ds[available_kpi_variables]
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
