@@ -158,14 +158,6 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
 
     # Set visibility for the vertical level dropdown based on KPI selection
     dropdown_style = {'display': 'block'} if 'GridsK' in ds_statusquo[selected_kpi].dims else {'display': 'none'}
-    
-    # Initialize the dropdown_style as hidden (default)
-    #dropdown_style = {'display': 'none'}
-    # Set dropdown background color based on the theme
-    #dropdown_style = {
-     #   'backgroundColor': 'rgba(30, 30, 30, 0.9)' if is_dark_mode else 'white',
-     #   'color': 'white' if is_dark_mode else 'black'
-    #}
 
     # Function to compute mean, min, and max for hourly plot dynamically
     def compute_hourly_stats(ds, kpi, has_grids_k):
@@ -182,7 +174,7 @@ def update_graphs(selected_kpi, selected_time, selected_level, toggle):
     # Determine if the KPI has a GridsK dimension (i.e., it's 3D)
     has_grids_k = 'GridsK' in ds_statusquo[selected_kpi].dims
 
-    # If GridsK exists (i.e., 3D data like WindSpd), adjust accordingly
+    # If GridsK exists (i.e., 3D data like WindSpd)
     if has_grids_k:
         # Find the index of the closest GridsK level
         selected_level_idx = int(np.argmin(np.abs(ds_statusquo['GridsK'].values - float(selected_level))))
